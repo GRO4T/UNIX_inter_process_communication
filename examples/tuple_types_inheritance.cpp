@@ -64,7 +64,7 @@ int main() {
     std::cout << (s1.matches(s3)) << std::endl;
     Float f1(2.5f);
     std::cout << (f1.matches(s3)) << std::endl;
-    Pattern p;
-    std::cout << (f1.matches(p)) << std::endl;
+    String s("123");
+    std::cout << (f1.matches(s)) << std::endl;
     return 0;
 }
