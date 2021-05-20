@@ -5,3 +5,5 @@ cmake-build*
 CMakeSettings.json
 out
 .vscode
+lib/fmt
+lib/googletest
