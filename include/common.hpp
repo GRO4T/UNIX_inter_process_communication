@@ -1,3 +1,6 @@
+#ifndef COMMON_HPP
+#define COMMON_HPP
+
 #include <loguru.hpp>
 #include <fmt/core.h>
 
@@ -11,3 +14,5 @@ namespace Lindux {
         loguru::g_stderr_verbosity = 1;
     }
 }
+
+#endif
