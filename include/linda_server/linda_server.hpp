@@ -21,8 +21,8 @@ public:
     void mainLoop();
 private:
     std::string genUuid();
-    int32_t fifoHandle;
+    int32_t fifoWrite;
+    int32_t fifoRead;
     sem_t* busSem;
-    sem_t* serverSem;
 };
 }  // namespace linda
