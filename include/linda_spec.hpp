@@ -26,9 +26,9 @@ constexpr uint8_t type_string = 0b00000001;
 }  // namespace commands
 
 namespace consts {
-constexpr char linda_bus[] = "/tmp/linda_server";
+constexpr char linda_bus_write[] = "/tmp/linda_bus_write";
+constexpr char linda_bus_read[] = "/tmp/linda_bus_read";
 constexpr char bus_mutex[] = "/bus_mutex";
-constexpr char inter_server_mutex[] ="/inter_server_mutex";
 constexpr uint max_path = 255;
 constexpr int mutex_value = 1;
 constexpr int perms = 0666;
