@@ -1,23 +1,45 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.11)
+include(FetchContent)
 
-set(CMAKE_CXX_STANDARD 11)
+FetchContent_Declare(stduuid
+  GIT_REPOSITORY https://github.com/mariusbancila/stduuid
+)
+FetchContent_GetProperties(stduuid)
+if(NOT stduuid_POPULATED)
+  FetchContent_Populate(stduuid)
+  add_subdirectory(${stduuid_SOURCE_DIR} ${stduuid_BINARY_DIR} EXCLUDE_FROM_ALL)
+endif()
+
+
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_BUILD_TYPE Debug)
 # set(CMAKE_BUILD_TYPE Release)
+
+set(CMAKE_CXX_FLAGS "-luuid -g -Wall -Wextra -pthread -Wpedantic ")
 
 project(linda-app)
 
 if (UNIX)
     include_directories("include")
-    file (GLOB lindux_sources
-        "include/*.hpp"
-        "src/*.cpp"  
+    set(SOURCE_DIRECTORY ${PROJECT_SOURCE_DIR}/src/)
+    set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/)
+    set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
+
+
+    set(SERVER_SOURCES 
+    ${SOURCE_DIRECTORY}/linda_server/linda_server.cpp
+    ${SOURCE_DIRECTORY}/server_main.cpp
+    ${SOURCE_DIRECTORY}/uuid_maker/uuid_maker.cpp
     )
-    add_library(lindux
-        ${lindux_sources}
+
+    set(CLIENT_SOURCES 
+    ${SOURCE_DIRECTORY}/client_main.cpp
     )
-    # target_link_libraries(lindux)
-    add_executable(hello-lindux test/apps/hello_lindux.cpp)
-    target_link_libraries(hello-lindux lindux)
+
+    add_executable(server ${SERVER_SOURCES})
+    add_executable(client ${CLIENT_SOURCES})
+
+    target_link_libraries(server stduuid)
 elseif (WIN32)
     message(ERROR "Windows not supported!")
 endif ()
