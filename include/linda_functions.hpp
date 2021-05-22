@@ -10,7 +10,6 @@
 
 #include "linda_spec.hpp"
 linda::LindaFifoPaths lindaConnect() {
-    std::cout << "WITAM WSZYSTKICH TO KLIENT" << std::endl;
     sem_t* busSem = sem_open(linda::consts::bus_mutex, 0);
 
     if (busSem == nullptr) {
@@ -28,10 +27,8 @@ linda::LindaFifoPaths lindaConnect() {
 
     linda::LindaMessage msg{};
     msg.control_mask = linda::commands::connect;
-    std::cout << "PRZED WRITEM" << std::endl;
     write(fifoWrite, &msg, linda::consts::message_size);
 
-    std::cout << "PRZED READEM" << std::endl;
     int result = read(fifoRead, &paths, sizeof(linda::LindaFifoPaths));
     if (result < 0 || result != sizeof(linda::LindaFifoPaths)) {
         std::cout << "Już za chwilę" << std::endl;

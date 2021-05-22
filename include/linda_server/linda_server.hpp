@@ -19,7 +19,12 @@ public:
     LindaServer();
     ~LindaServer();
     void mainLoop();
+
 private:
+    template <class T>
+    void send(T message, size_t size) const;
+    void sendPaths();
+    void startNewServiceThread(linda::LindaFifoPaths paths);
     std::string genUuid();
     int32_t fifoWrite;
     int32_t fifoRead;

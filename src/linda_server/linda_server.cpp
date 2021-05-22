@@ -2,9 +2,9 @@
 
 linda::LindaServer::LindaServer() {
     // CREATING MUTEX;
-    busSem = sem_open(linda::consts::bus_mutex, O_CREAT,
-                        linda::consts::perms, linda::consts::mutex_value);
-    // CREATING FIFO;
+    busSem = sem_open(linda::consts::bus_mutex, O_CREAT, linda::consts::perms,
+                      linda::consts::mutex_value);
+    // CREATING FIFOS;
     int result = mkfifo(linda::consts::linda_bus_read, linda::consts::perms);
     if (result < 0) perror("Error while creating FIFO");
     result = mkfifo(linda::consts::linda_bus_write, linda::consts::perms);
@@ -26,8 +26,28 @@ std::string linda::LindaServer::genUuid() {
     return uuidStr;
 }
 
-void linda::LindaServer::mainLoop() {
+template <class T>
+void linda::LindaServer::send(T message, size_t size) const {
+    int ret = write(fifoWrite, &message, size);
+    if (ret < 0) {
+        throw "Error: Could not send through FIFO.";
+        return;
+    }
+}
 
+void linda::LindaServer::sendPaths() {
+    std::string uuidStr = genUuid();
+    std::string client_write =
+        std::string("/tmp/") + uuidStr + std::string("_write.fifo");
+    std::string client_read =
+        std::string("/tmp/") + uuidStr + std::string("_read.fifo");
+    linda::LindaFifoPaths paths;
+    strncpy(paths.read_path, client_read.c_str(), linda::consts::max_path);
+    strncpy(paths.write_path, client_write.c_str(), linda::consts::max_path);
+    send(paths, sizeof(paths));
+}
+
+void linda::LindaServer::mainLoop() {
     struct pollfd pfd[2];
     memset(&pfd[0], 0, sizeof(pfd));
     pfd[0].fd = fifoRead;
@@ -42,29 +62,14 @@ void linda::LindaServer::mainLoop() {
         if (ret > 0 && pfd[0].revents & POLLIN) {
             linda::LindaMessage msg;
             memset(&msg, 0, linda::consts::message_size);
-            std::cout<<"READ"<<std::endl;
             int result = read(fifoRead, &msg, linda::consts::message_size);
             if (result > 0 && msg.control_mask == linda::commands::connect) {
-                std::cout<<"CONNECTED"<<std::endl;
                 connected = true;
             } else if (result < 0) {
                 perror("Error read");
             }
         } else if (ret > 0 && pfd[1].revents & POLLOUT && connected) {
-            std::cout << "CLIENT WANT TO CONNEC" << std::endl;
-            std::string uuidStr = genUuid();
-            std::string client_write =
-                std::string("/tmp/") + uuidStr + std::string("_write.fifo");
-            std::string client_read =
-                std::string("/tmp/") + uuidStr + std::string("_read.fifo");
-            linda::LindaFifoPaths paths;
-            std::cout << client_write << std::endl;
-            std::cout << client_read << std::endl;
-            strncpy(paths.read_path, client_read.c_str(),
-                    linda::consts::max_path);
-            strncpy(paths.write_path, client_write.c_str(),
-                    linda::consts::max_path);
-            write(fifoWrite, &paths, sizeof(paths));
+            sendPaths();
             connected = false;
         }
     }
