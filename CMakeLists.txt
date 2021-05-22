@@ -30,10 +30,14 @@ if (UNIX)
     ${SOURCE_DIRECTORY}/linda_server/linda_server.cpp
     ${SOURCE_DIRECTORY}/server_main.cpp
     ${SOURCE_DIRECTORY}/uuid_maker/uuid_maker.cpp
+    ${SOURCE_DIRECTORY}/linda_functions/linda_functions.cpp
+    ${SOURCE_DIRECTORY}/linda_functions/linda_helpers.cpp
     )
 
     set(CLIENT_SOURCES 
     ${SOURCE_DIRECTORY}/client_main.cpp
+    ${SOURCE_DIRECTORY}/linda_functions/linda_functions.cpp
+    ${SOURCE_DIRECTORY}/linda_functions/linda_helpers.cpp
     )
 
     add_executable(server ${SERVER_SOURCES})

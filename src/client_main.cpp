@@ -1,6 +1,7 @@
-#include "linda_functions.hpp"
+#include "linda_functions/linda_functions.hpp"
 
 int main(){
-    linda::lindaConnect();
+    linda::LindaFifoPaths paths = linda::lindaConnect();
+    linda::linda_work(paths);
     return 0;
 }

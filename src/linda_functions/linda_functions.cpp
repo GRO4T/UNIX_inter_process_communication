@@ -1,19 +1,6 @@
-#pragma once
-#include <fcntl.h>
-#include <semaphore.h>
-#include <stdio.h>
-#include <sys/poll.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#include "linda_functions/linda_functions.hpp"
 
-#include <cstring>
-#include <iostream>
-
-#include "linda_spec.hpp"
-#include "linda_helpers.hpp"
-
-namespace linda{
-LindaFifoPaths lindaConnect() {
+linda::LindaFifoPaths linda::lindaConnect() {
     sem_t* busSem = sem_open(consts::bus_mutex, 0);
 
     if (busSem == nullptr) {
@@ -46,6 +33,18 @@ LindaFifoPaths lindaConnect() {
     sem_close(busSem);
     return paths;
 }
+void linda::linda_work(LindaFifoPaths paths) {
+    int fifoWrite = openFIFO(paths.write_path, O_WRONLY);
+    int fifoRead = openFIFO(paths.read_path, O_RDONLY);
+
+    char buffer[linda::consts::max_path] = "Hello from client!";
+    write(fifoWrite, &buffer, sizeof(buffer));
+
+    char msg[linda::consts::max_path];
+    memset(&msg, 0, sizeof(msg));
+    read(fifoRead, &msg, sizeof(msg));
+    std::cout << msg << std::endl;
+
+    closeFIFO(fifoRead);
+    closeFIFO(fifoWrite);
 }
-
-

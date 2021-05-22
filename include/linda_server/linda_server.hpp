@@ -10,7 +10,7 @@
 #include <iostream>
 
 #include "linda_spec.hpp"
-#include "linda_helpers.hpp"
+#include "linda_functions/linda_helpers.hpp"
 #include "uuid_maker/uuid_maker.hpp"
 
 namespace linda {
@@ -24,11 +24,14 @@ public:
 private:
     template <class T>
     void send(T message, size_t size) const;
-    void sendPaths();
-    void service(linda::LindaFifoPaths paths);
+    linda::LindaFifoPaths sendPaths();
+    //MUSI BYĆ STATIC BO INACZEJ SEGFAULT
+    static void* service(void * paths);
     std::string genUuid();
+
     int32_t fifoWrite;
     int32_t fifoRead;
     sem_t* busSem;
+    std::vector<pthread_t> serviceThreads;
 };
 }  // namespace linda
