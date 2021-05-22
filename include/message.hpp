@@ -14,7 +14,7 @@ using ElemType = uint8_t;
 using OperationType = uint8_t;
 
 const MsgType TYPE_CONNECTION_MSG = 0b10000000;
-const MsgType TYPE_OPERATION_HEADER = 0b01000000;
+const MsgType TYPE_OPERATION_MSG = 0b01000000;
 const MsgType TYPE_TUPLE_ELEM = 0b00100000;
 
 const OperationType OP_LINDA_READ = 0b10000000;
@@ -22,9 +22,10 @@ const OperationType OP_LINDA_INPUT = 0b01000000;
 const OperationType OP_LINDA_WRITE = 0b00100000;
 const OperationType OP_RETURN_RESULT = 0b00010000;
 
-const ElemType ELEM_INT = 0b10000000;
-const ElemType ELEM_FLOAT = 0b01000000;
-const ElemType ELEM_STRING = 0b00100000;
+// they correspond to indices in TupleElem variant
+const ElemType ELEM_INT = 0;
+const ElemType ELEM_FLOAT = 1;
+const ElemType ELEM_STRING = 2;
 
 struct Message {
     virtual MsgType GetType() = 0;
@@ -44,7 +45,7 @@ struct OperationMessage : public Message {
     OperationMessage(OperationType opType, uint32_t tupleSize)
         : op_type(opType), tuple_size(tupleSize) {}
 
-    MsgType GetType() { return TYPE_OPERATION_HEADER; }
+    MsgType GetType() { return TYPE_OPERATION_MSG; }
 
     OperationType op_type; 
     uint32_t tuple_size;
@@ -52,8 +53,9 @@ struct OperationMessage : public Message {
 
 struct TupleElemMessage : public Message {
     TupleElemMessage() {}
-    TupleElemMessage(ElemType elemType, const TupleElem& elem)
-        : elem_type(elemType), elem(elem) {}
+    TupleElemMessage(int val): elem_type(ELEM_INT), elem(val) {}
+    TupleElemMessage(double val): elem_type(ELEM_FLOAT), elem(val) {}
+    TupleElemMessage(std::string val): elem_type(ELEM_STRING), elem(val) {}
 
     MsgType GetType() { return TYPE_TUPLE_ELEM; }
 
