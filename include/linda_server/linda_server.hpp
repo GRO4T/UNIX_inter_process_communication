@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "linda_spec.hpp"
+#include "linda_helpers.hpp"
 #include "uuid_maker/uuid_maker.hpp"
 
 namespace linda {
@@ -24,7 +25,7 @@ private:
     template <class T>
     void send(T message, size_t size) const;
     void sendPaths();
-    void startNewServiceThread(linda::LindaFifoPaths paths);
+    void service(linda::LindaFifoPaths paths);
     std::string genUuid();
     int32_t fifoWrite;
     int32_t fifoRead;

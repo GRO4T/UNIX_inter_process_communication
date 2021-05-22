@@ -5,17 +5,18 @@ linda::LindaServer::LindaServer() {
     busSem = sem_open(linda::consts::bus_mutex, O_CREAT, linda::consts::perms,
                       linda::consts::mutex_value);
     // CREATING FIFOS;
-    int result = mkfifo(linda::consts::linda_bus_read, linda::consts::perms);
-    if (result < 0) perror("Error while creating FIFO");
-    result = mkfifo(linda::consts::linda_bus_write, linda::consts::perms);
-    if (result < 0) perror("Error while creating FIFO");
-    fifoRead = open(linda::consts::linda_bus_write, O_RDWR);
-    fifoWrite = open(linda::consts::linda_bus_read, O_RDWR);
+    makeFIFO(linda::consts::linda_bus_read, linda::consts::perms);
+    makeFIFO(linda::consts::linda_bus_write, linda::consts::perms);
+
+    fifoRead = openFIFO(linda::consts::linda_bus_write, O_RDWR);
+    fifoWrite = openFIFO(linda::consts::linda_bus_read, O_RDWR);
 }
 
 linda::LindaServer::~LindaServer() {
     sem_close(busSem);
     sem_unlink(linda::consts::bus_mutex);
+    closeFIFO(fifoRead);
+    closeFIFO(fifoWrite);
     unlink(linda::consts::linda_bus_write);
     unlink(linda::consts::linda_bus_read);
 }
@@ -45,6 +46,21 @@ void linda::LindaServer::sendPaths() {
     strncpy(paths.read_path, client_read.c_str(), linda::consts::max_path);
     strncpy(paths.write_path, client_write.c_str(), linda::consts::max_path);
     send(paths, sizeof(paths));
+}
+
+void linda::LindaServer::service(linda::LindaFifoPaths paths) {
+    std::cout << "THIS IS SERVICE THREAD" << std::endl;
+
+    //MAKING FIFOS
+    makeFIFO(paths.write_path, linda::consts::perms);
+    makeFIFO(paths.read_path, linda::consts::perms);
+
+    uint32_t fifoRead = openFIFO(paths.write_path, O_RDONLY);
+    uint32_t fifoWrite = openFIFO(paths.read_path, O_WRONLY); 
+
+    sleep(1);
+    std::cout << "Work..." << std::endl;
+    pthread_exit(nullptr);
 }
 
 void linda::LindaServer::mainLoop() {

@@ -1,6 +1,6 @@
 #include "linda_functions.hpp"
 
 int main(){
-    lindaConnect();
+    linda::lindaConnect();
     return 0;
 }
