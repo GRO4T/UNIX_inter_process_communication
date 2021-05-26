@@ -3,7 +3,7 @@
 
 #include <variant>
 
-namespace Lindux
+namespace linda
 {
 
 // TODO move it somewhere else
@@ -16,6 +16,7 @@ using OperationType = uint8_t;
 const MsgType TYPE_CONNECTION_MSG = 0b10000000;
 const MsgType TYPE_OPERATION_MSG = 0b01000000;
 const MsgType TYPE_TUPLE_ELEM = 0b00100000;
+const MsgType TYPE_SERVER_CONN_RESPONSE = 0b00010000;
 
 const OperationType OP_LINDA_READ = 0b10000000;
 const OperationType OP_LINDA_INPUT = 0b01000000;
@@ -38,6 +39,17 @@ struct ConnectionMessage : public Message {
     MsgType GetType() { return TYPE_CONNECTION_MSG; }
 
     bool connect;
+};
+
+struct ServerConnectionResponse : public Message {
+    ServerConnectionResponse() {}
+    ServerConnectionResponse(bool connected, const std::string& fifo_write, const std::string& fifo_read):
+        connected(connected), fifo_write(fifo_write), fifo_read(fifo_read) {}
+
+    MsgType GetType() { return TYPE_SERVER_CONN_RESPONSE; }
+    bool connected;
+    std::string fifo_write;
+    std::string fifo_read;
 };
 
 struct OperationMessage : public Message {

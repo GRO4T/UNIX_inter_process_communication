@@ -14,5 +14,5 @@
 
 namespace linda {
 LindaFifoPaths lindaConnect();
-void linda_work(LindaFifoPaths paths);
+void lindaWork(LindaFifoPaths paths);
 }  // namespace linda

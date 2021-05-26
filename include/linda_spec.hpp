@@ -10,8 +10,8 @@ struct __attribute__((__packed__)) LindaMessage {
 };
 
 struct LindaFifoPaths {
-    char read_path[255];
-    char write_path[255];
+    std::string read_path;
+    std::string write_path;
 };
 
 namespace commands {

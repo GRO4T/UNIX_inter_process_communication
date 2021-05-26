@@ -1,4 +1,4 @@
-#include "uuid_maker/uuid_maker.hpp"
+#include "uuid_maker.hpp"
 
 linda::UuidMaker::UuidMaker() {
   std::random_device rd;

@@ -6,7 +6,7 @@
 
 #include "message.hpp"
 
-namespace Lindux
+namespace linda
 {
 
 using StringConstIt = std::string::const_iterator;

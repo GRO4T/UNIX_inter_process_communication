@@ -4,7 +4,7 @@
 #include <map>
 #include <algorithm>
 
-namespace Lindux
+namespace linda
 {
 
 template <class T>
@@ -47,6 +47,17 @@ std::unique_ptr<Message> deserialize<TYPE_CONNECTION_MSG>(StringConstIt& begin,
     auto msg = std::make_unique<ConnectionMessage>();
     std::advance(begin, sizeof(MsgType));
     deserialize(&msg->connect, begin, end);
+    return msg;
+}
+
+template <>
+std::unique_ptr<Message> deserialize<TYPE_SERVER_CONN_RESPONSE>(StringConstIt& begin,
+                                                             StringConstIt end) {
+    auto msg = std::make_unique<ServerConnectionResponse>();
+    std::advance(begin, sizeof(MsgType));
+    deserialize(&msg->connected, begin, end);
+    deserialize(std::back_inserter(msg->fifo_write), begin, end);
+    deserialize(std::back_inserter(msg->fifo_read), begin, end);
     return msg;
 }
 
@@ -94,7 +105,8 @@ MsgType findFirstMsgType(StringConstIt& begin, StringConstIt end) {
     auto NotFound = [begin, end]() { return (std::size_t)(end - begin); };
     std::map<MsgType, std::size_t> msg_positions = {{TYPE_CONNECTION_MSG, NotFound()},
                                                     {TYPE_OPERATION_MSG, NotFound()},
-                                                    {TYPE_TUPLE_ELEM, NotFound()}
+                                                    {TYPE_TUPLE_ELEM, NotFound()},
+                                                    {TYPE_SERVER_CONN_RESPONSE, NotFound()}
                                                     };
     for (auto& msg_pos : msg_positions) {  // for each type try to find it
         msg_pos.second = (std::size_t)(std::find(begin, end, (char)msg_pos.first) -
@@ -120,6 +132,8 @@ std::unique_ptr<Message> deserialize(StringConstIt& begin, StringConstIt end) {
             return deserialize<TYPE_OPERATION_MSG>(begin, end);
         case (TYPE_TUPLE_ELEM):
             return deserialize<TYPE_TUPLE_ELEM>(begin, end);
+        case (TYPE_SERVER_CONN_RESPONSE):
+            return deserialize<TYPE_SERVER_CONN_RESPONSE>(begin, end);
         default:
             throw std::runtime_error("Cannot deserialize. Unknown message type.");
     }

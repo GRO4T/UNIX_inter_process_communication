@@ -24,27 +24,7 @@ if (UNIX)
     set(SOURCE_DIRECTORY ${PROJECT_SOURCE_DIR}/src/)
     set(EXECUTABLE_OUTPUT_PATH  ${PROJECT_SOURCE_DIR}/bin/)
     set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH})
-
-
-    set(SERVER_SOURCES 
-    ${SOURCE_DIRECTORY}/linda_server/linda_server.cpp
-    ${SOURCE_DIRECTORY}/server_main.cpp
-    ${SOURCE_DIRECTORY}/uuid_maker/uuid_maker.cpp
-    ${SOURCE_DIRECTORY}/linda_functions/linda_functions.cpp
-    ${SOURCE_DIRECTORY}/linda_functions/linda_helpers.cpp
-    )
-
-    set(CLIENT_SOURCES 
-    ${SOURCE_DIRECTORY}/client_main.cpp
-    ${SOURCE_DIRECTORY}/linda_functions/linda_functions.cpp
-    ${SOURCE_DIRECTORY}/linda_functions/linda_helpers.cpp
-    )
-
-    add_executable(server ${SERVER_SOURCES})
-    add_executable(client ${CLIENT_SOURCES})
-
-    target_link_libraries(server stduuid)
-
+    # libraries
     add_subdirectory(lib/googletest)
     include_directories(lib/googletest include)
 
@@ -53,24 +33,30 @@ if (UNIX)
 
     add_subdirectory(lib/loguru)
     include_directories(lib/loguru)
-
+    # sources
     file (GLOB lindux_sources
-        "include/*.hpp"
-        "src/*.cpp"  
-    )
+            "include/*.hpp"
+            "src/*.cpp"
+            )
+
+    file (GLOB lindux_headers
+            "include/*.hpp")
 
     file (GLOB lindux_unit_test_sources
-        "test/unit/*.cpp" 
-    )
-
+            "test/unit/*.cpp"
+            )
+    # project library
     add_library(lindux
-        ${lindux_sources}
-    )
-    target_link_libraries(lindux fmt loguru pthread dl)
-
+            ${lindux_sources}
+            )
+    target_link_libraries(lindux fmt loguru pthread dl stduuid)
+    # executables
+    add_executable(server test/apps/server_main.cpp ${lindux_headers})
+    add_executable(client test/apps/client_main.cpp)
     add_executable(unit_test ${lindux_unit_test_sources})
     add_executable(hello-lindux test/apps/hello_lindux.cpp)
-
+    target_link_libraries(server lindux)
+    target_link_libraries(client lindux)
     target_link_libraries(unit_test lindux gtest gtest_main)
     target_link_libraries(hello-lindux lindux)
 elseif (WIN32)

@@ -839,7 +839,7 @@ namespace loguru
 		This works for Unix like systems (i.e. Linux/Mac)
 		There is no current implementation for Windows (as I don't know the
 		equivalent calls or have a way to test them). If you know please
-		add and send a pull request.
+		add and sendBytes a pull request.
 
 		The code should still compile under windows but will only generate
 		a warning message that syslog is unavailable.

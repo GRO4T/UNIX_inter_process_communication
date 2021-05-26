@@ -1,10 +1,9 @@
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#pragma once
 
 #include <loguru.hpp>
 #include <fmt/core.h>
 
-namespace Lindux {
+namespace linda {
     inline void loggerInit(
             int argc, char ** argv, const std::string& logfile = "lindux.log",
             loguru::Verbosity verbosity = loguru::Verbosity_MAX) {
@@ -14,5 +13,3 @@ namespace Lindux {
         loguru::g_stderr_verbosity = 1;
     }
 }
-
-#endif

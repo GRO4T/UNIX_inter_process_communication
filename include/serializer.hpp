@@ -1,7 +1,6 @@
-#ifndef SERIALIZER_HPP
-#define SERIALIZER_HPP
+#pragma once
 
-namespace Lindux
+namespace linda
 {
 
 template <class T>
@@ -18,6 +17,15 @@ std::string serialize(ConnectionMessage& msg) {
     std::string bytes;
     serialize(std::back_inserter(bytes), msg.GetType());
     serialize(std::back_inserter(bytes), msg.connect);
+    return bytes;
+}
+
+std::string serialize(ServerConnectionResponse& msg) {
+    std::string bytes;
+    serialize(std::back_inserter(bytes), msg.GetType());
+    serialize(std::back_inserter(bytes), msg.connected);
+    serialize(std::back_inserter(bytes), msg.fifo_write);
+    serialize(std::back_inserter(bytes), msg.fifo_read);
     return bytes;
 }
 
@@ -50,6 +58,3 @@ std::string serialize(TupleElemMessage& msg) {
 }
 
 } // namespace Lindux
-
-
-#endif

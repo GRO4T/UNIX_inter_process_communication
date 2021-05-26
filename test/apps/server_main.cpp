@@ -1,8 +1,10 @@
 #include <iostream>
 
-#include "linda_server/linda_server.hpp"
+#include "common.hpp"
+#include "server.hpp"
 
-int main() {
+int main(int argc, char ** argv) {
+    linda::loggerInit(argc, argv);
     std::cout << "Hello LINDUX" << std::endl;
     linda::LindaServer serv;
     serv.mainLoop();

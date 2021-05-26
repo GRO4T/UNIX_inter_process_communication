@@ -9,8 +9,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <string>
+
+#define BUFFER_SIZE 512
+
 namespace linda {
- uint32_t openFIFO(const char* path, int mode);
- void makeFIFO(const char* path, mode_t mode);
+ uint32_t openFIFO(const std::string& path, int mode);
+ void makeFIFO(const std::string& path, mode_t mode);
  void closeFIFO(int fileDescriptor);
+
+
+void sendBytes(const std::string& msg, const int fifo_fd);
+std::string readBytes(const int fifo_fd);
 }  // namespace linda
