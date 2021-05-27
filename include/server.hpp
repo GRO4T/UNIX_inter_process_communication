@@ -8,23 +8,22 @@
 
 #include <cstring>
 #include <iostream>
+#include <vector>
 
-#include "linda_helpers.hpp"
-#include "linda_spec.hpp"
-#include "uuid_maker.hpp"
+#include "linda_common.hpp"
 
 namespace linda {
 
-class LindaServer {
+class Server {
 public:
-    LindaServer();
-    ~LindaServer();
+    Server();
+    ~Server();
     void mainLoop();
 
 private:
-    LindaFifoPaths sendPaths();
-    //MUSI BYĆ STATIC BO INACZEJ SEGFAULT
-    static void* service(void * paths);
+    FifoPaths sendPaths();
+    // MUSI BYĆ STATIC BO INACZEJ SEGFAULT
+    static void* service(void* arg);
     std::string genUuid();
 
     int32_t fifo_write;

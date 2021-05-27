@@ -2,11 +2,12 @@
 
 #include "common.hpp"
 #include "deserializer.hpp"
-#include "linda_helpers.hpp"
+#include "linda_common.hpp"
 #include "message.hpp"
 #include "serializer.hpp"
 
-linda::LindaServer::LindaServer() {
+linda::Server::Server() {
+    LOG_S(INFO) << "Starting server...\n";
     // CREATING MUTEX;
     bus_sem = sem_open(linda::consts::bus_mutex, O_CREAT, linda::consts::perms,
                       linda::consts::mutex_value);
@@ -18,7 +19,7 @@ linda::LindaServer::LindaServer() {
     fifo_write = openFIFO(linda::consts::linda_bus_read, O_RDWR);
 }
 
-linda::LindaServer::~LindaServer() {
+linda::Server::~Server() {
     sem_close(bus_sem);
     sem_unlink(linda::consts::bus_mutex);
     closeFIFO(fifo_read);
@@ -27,13 +28,13 @@ linda::LindaServer::~LindaServer() {
     unlink(linda::consts::linda_bus_read);
 }
 
-std::string linda::LindaServer::genUuid() {
+std::string linda::Server::genUuid() {
     auto uuid = UuidMaker::Instance().GenUuid();
     std::string uuidStr = uuids::to_string(uuid);
     return uuidStr;
 }
 
-linda::LindaFifoPaths linda::LindaServer::sendPaths() {
+linda::FifoPaths linda::Server::sendPaths() {
     std::string uuidStr = genUuid();
     std::string client_write =
         std::string("/tmp/") + uuidStr + std::string("_write.fifo");
@@ -44,19 +45,20 @@ linda::LindaFifoPaths linda::LindaServer::sendPaths() {
 
     ServerConnectionResponse msg(true, client_write, client_read);
     sendBytes(serialize(msg), fifo_write);
-    return LindaFifoPaths{client_write, client_read};
+    return {client_write, client_read};
 }
 
-void* linda::LindaServer::service(void *  paths) {
+void* linda::Server::service(void * arg) {
+    auto fifo_path = *static_cast<FifoPaths*>(arg);
     LOG_S(INFO) << "THIS IS SERVICE THREAD\n";
-
+    DLOG_S(INFO) << "FIFO READ: " << fifo_path.read_path << std::endl;
+    DLOG_S(INFO) << "FIFO WRITE: " << fifo_path.write_path << std::endl;
     sleep(1);
-    std::cout << "Work..." << std::endl;
-
+    LOG_S(INFO) << "Work...\n";
     pthread_exit(nullptr);
 }
 
-void linda::LindaServer::mainLoop() {
+void linda::Server::mainLoop() {
     struct pollfd pfd[2];
     memset(&pfd[0], 0, sizeof(pfd));
     pfd[0].fd = fifo_read;
@@ -69,10 +71,12 @@ void linda::LindaServer::mainLoop() {
     while (true) {
         int ret = poll(pfd, 2, -1);
         if (ret > 0 && pfd[0].revents & POLLIN) {
+            LOG_S(INFO) << "Server received message...\n";
             auto bytes = readBytes(fifo_read);
             auto c_it = bytes.cbegin();
             auto recv_msg = deserialize(c_it, bytes.cend());
             if (recv_msg->GetType() == TYPE_CONNECTION_MSG) {
+                LOG_S(INFO) << "Client trying to connect...\n";
                 auto recv_conn_resp_msg = static_cast<ConnectionMessage*>(recv_msg.get());
                 if (recv_conn_resp_msg->connect) {
                     connected = true;
@@ -82,9 +86,10 @@ void linda::LindaServer::mainLoop() {
                 throw std::runtime_error("Bad message type in this context. Expected ConnectionMessage!");
             }
         } else if (ret > 0 && pfd[1].revents & POLLOUT && connected) {
-            linda::LindaFifoPaths paths = sendPaths();
+            LOG_S(INFO) << "Server approved client's connection...\nReturning response...\n";
+            linda::FifoPaths paths = sendPaths();
             pthread_t serviceThread;
-            pthread_create(&serviceThread, NULL, linda::LindaServer::service, (void*) &paths);
+            pthread_create(&serviceThread, NULL, linda::Server::service, (void*) &paths);
             service_threads.push_back(serviceThread);
             connected = false;
         }

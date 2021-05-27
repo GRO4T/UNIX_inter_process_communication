@@ -1,8 +1,14 @@
+#include "client.hpp"
 #include "common.hpp"
-#include "linda_functions.hpp"
 
 int main(int argc, char ** argv){
-    linda::loggerInit(argc, argv);
-    linda::LindaFifoPaths paths = linda::lindaConnect();
+    try {
+        linda::loggerInit(argc, argv);
+        linda::Client client;
+        client.connect();
+    }
+    catch (std::exception& e) {
+        LOG_S(ERROR) << e.what() << std::endl;
+    }
     return 0;
 }

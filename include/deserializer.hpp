@@ -1,13 +1,11 @@
-#ifndef DESERIALIZER_HPP
-#define DESERIALIZER_HPP
+#pragma once
 
 #include <exception>
 #include <memory>
 
 #include "message.hpp"
 
-namespace linda
-{
+namespace linda {
 
 using StringConstIt = std::string::const_iterator;
 
@@ -17,6 +15,4 @@ public:
 };
 
 std::unique_ptr<Message> deserialize(StringConstIt& begin, StringConstIt end);
-} // namespace Lindux
-
-#endif
+}  // namespace linda

@@ -4,9 +4,13 @@
 #include "server.hpp"
 
 int main(int argc, char ** argv) {
-    linda::loggerInit(argc, argv);
-    std::cout << "Hello LINDUX" << std::endl;
-    linda::LindaServer serv;
-    serv.mainLoop();
+    try {
+        linda::loggerInit(argc, argv);
+        linda::Server serv;
+        serv.mainLoop();
+    }
+    catch (std::exception& e) {
+        LOG_S(ERROR) << e.what() << std::endl;
+    }
     return 0;
 }

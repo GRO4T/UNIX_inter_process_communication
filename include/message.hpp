@@ -3,8 +3,7 @@
 
 #include <variant>
 
-namespace linda
-{
+namespace linda {
 
 // TODO move it somewhere else
 using TupleElem = std::variant<int, double, std::string>;
@@ -43,8 +42,9 @@ struct ConnectionMessage : public Message {
 
 struct ServerConnectionResponse : public Message {
     ServerConnectionResponse() {}
-    ServerConnectionResponse(bool connected, const std::string& fifo_write, const std::string& fifo_read):
-        connected(connected), fifo_write(fifo_write), fifo_read(fifo_read) {}
+    ServerConnectionResponse(bool connected, const std::string& fifo_write,
+                             const std::string& fifo_read)
+        : connected(connected), fifo_write(fifo_write), fifo_read(fifo_read) {}
 
     MsgType GetType() { return TYPE_SERVER_CONN_RESPONSE; }
     bool connected;
@@ -59,23 +59,22 @@ struct OperationMessage : public Message {
 
     MsgType GetType() { return TYPE_OPERATION_MSG; }
 
-    OperationType op_type; 
+    OperationType op_type;
     uint32_t tuple_size;
 };
 
 struct TupleElemMessage : public Message {
     TupleElemMessage() {}
-    TupleElemMessage(int val): elem_type(ELEM_INT), elem(val) {}
-    TupleElemMessage(double val): elem_type(ELEM_FLOAT), elem(val) {}
-    TupleElemMessage(std::string val): elem_type(ELEM_STRING), elem(val) {}
+    TupleElemMessage(int val) : elem_type(ELEM_INT), elem(val) {}
+    TupleElemMessage(double val) : elem_type(ELEM_FLOAT), elem(val) {}
+    TupleElemMessage(std::string val) : elem_type(ELEM_STRING), elem(val) {}
 
     MsgType GetType() { return TYPE_TUPLE_ELEM; }
 
-    ElemType elem_type; 
+    ElemType elem_type;
     TupleElem elem;
 };
-    
-} // namespace Lindux
 
+}  // namespace linda
 
 #endif

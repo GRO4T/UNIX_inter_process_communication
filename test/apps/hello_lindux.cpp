@@ -1,5 +1,4 @@
 #include <iostream>
-#include "dummy.hpp"
 #include "common.hpp"
 #include "message.hpp"
 

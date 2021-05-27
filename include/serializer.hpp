@@ -1,14 +1,14 @@
 #pragma once
 
-namespace linda
-{
+namespace linda {
 
 template <class T>
 void serialize(std::back_insert_iterator<std::string> buffer, T value) {
     std::copy_n((char*)&value, sizeof(T), buffer);
 }
 
-void serialize(std::back_insert_iterator<std::string> buffer, const std::string& value) {
+void serialize(std::back_insert_iterator<std::string> buffer,
+               const std::string& value) {
     serialize(buffer, value.length());
     std::copy(value.begin(), value.end(), buffer);
 }
@@ -49,7 +49,8 @@ std::string serialize(TupleElemMessage& msg) {
             serialize(std::back_inserter(bytes), std::get<double>(msg.elem));
             break;
         case ELEM_STRING:
-            serialize(std::back_inserter(bytes), std::get<std::string>(msg.elem));
+            serialize(std::back_inserter(bytes),
+                      std::get<std::string>(msg.elem));
             break;
         default:
             throw std::runtime_error("Cannot serialize. Unknown type.");
@@ -57,4 +58,4 @@ std::string serialize(TupleElemMessage& msg) {
     return bytes;
 }
 
-} // namespace Lindux
+}  // namespace linda
