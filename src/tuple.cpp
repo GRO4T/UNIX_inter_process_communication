@@ -13,32 +13,32 @@ bool linda::Pattern::matches(TupleElem& elem){
 }
 
 bool linda::Pattern::matches(std::string& elem){
-	if(op == Operator::Equal) return elem==std::get<std::string>(value);
-	if(op == Operator::NotEqual) return elem!=std::get<std::string>(value);
-	if(op == Operator::GreaterThan) return elem>std::get<std::string>(value);
-	if(op == Operator::LessThan) return elem<std::get<std::string>(value);
-	if(op == Operator::NotGreaterThan) return elem<=std::get<std::string>(value);
-	if(op == Operator::NotLessThan) return elem>=std::get<std::string>(value);
+	if(op == Operator::Equal) return elem == std::get<std::string>(value);
+	if(op == Operator::NotEqual) return elem != std::get<std::string>(value);
+	if(op == Operator::GreaterThan) return elem > std::get<std::string>(value);
+	if(op == Operator::LessThan) return elem < std::get<std::string>(value);
+	if(op == Operator::NotGreaterThan) return elem <= std::get<std::string>(value);
+	if(op == Operator::NotLessThan) return elem >= std::get<std::string>(value);
 	throw std::runtime_error("bad option");
 }
 
 bool linda::Pattern::matches(int& elem){
-	if(op == Operator::Equal) return elem==std::get<int>(value);
-	if(op == Operator::NotEqual) return elem!=std::get<int>(value);
-	if(op == Operator::GreaterThan) return elem>std::get<int>(value);
-	if(op == Operator::LessThan) return elem<std::get<int>(value);
-	if(op == Operator::NotGreaterThan) return elem<=std::get<int>(value);
-	if(op == Operator::NotLessThan) return elem>=std::get<int>(value);
+	if(op == Operator::Equal) return elem == std::get<int>(value);
+	if(op == Operator::NotEqual) return elem != std::get<int>(value);
+	if(op == Operator::GreaterThan) return elem > std::get<int>(value);
+	if(op == Operator::LessThan) return elem < std::get<int>(value);
+	if(op == Operator::NotGreaterThan) return elem <= std::get<int>(value);
+	if(op == Operator::NotLessThan) return elem >= std::get<int>(value);
 	throw std::runtime_error("bad option");
 }
 
 bool linda::Pattern::matches(double& elem){
-	if(op == Operator::Equal) return elem==std::get<double>(value);
-	if(op == Operator::NotEqual) return elem!=std::get<double>(value);
-	if(op == Operator::GreaterThan) return elem>std::get<double>(value);
-	if(op == Operator::LessThan) return elem<std::get<double>(value);
-	if(op == Operator::NotGreaterThan) return elem<=std::get<double>(value);
-	if(op == Operator::NotLessThan) return elem>=std::get<double>(value);
+	if(op == Operator::Equal) return elem == std::get<double>(value);
+	if(op == Operator::NotEqual) return elem != std::get<double>(value);
+	if(op == Operator::GreaterThan) return elem > std::get<double>(value);
+	if(op == Operator::LessThan) return elem < std::get<double>(value);
+	if(op == Operator::NotGreaterThan) return elem <= std::get<double>(value);
+	if(op == Operator::NotLessThan) return elem >= std::get<double>(value);
 	throw std::runtime_error("bad option");
 }
 
