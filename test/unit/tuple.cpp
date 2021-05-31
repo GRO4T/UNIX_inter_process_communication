@@ -4,6 +4,8 @@
 #include <type_traits>
 
 #include "tuple.hpp"
+#include "serializer.hpp"
+#include "deserializer.hpp"
 
 using namespace linda;
 
@@ -193,6 +195,80 @@ TEST(Tuple, FloatNotLessThan) {
     EXPECT_EQ(pattern.matches(elemTupleLessThan), false);
 }
 
-TEST(Tuple, Serialize){
-    String pattern("*");
+TEST(Serialization, OneTuplePatternElemInt) {
+    Int msg("==123");
+    auto bytes = serialize(msg);
+    auto c_it = bytes.cbegin();
+    auto recv_msg = deserialize(c_it, bytes.cend());
+    EXPECT_EQ(recv_msg->GetType(), msg.GetType());
+    auto recv_tuple = static_cast<Int*>(recv_msg.get());
+    TupleElem elem(123);
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+    elem = TupleElem(124);
+    EXPECT_EQ(recv_tuple->matches(elem), false);
+}
+
+TEST(Serialization, OneTuplePatternElemFloat) {
+    Float msg("==123.5");
+    auto bytes = serialize(msg);
+    auto c_it = bytes.cbegin();
+    auto recv_msg = deserialize(c_it, bytes.cend());
+    EXPECT_EQ(recv_msg->GetType(), msg.GetType());
+    auto recv_tuple = static_cast<Float*>(recv_msg.get());
+    TupleElem elem(123.5);
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+    elem = TupleElem(12.2);
+    EXPECT_EQ(recv_tuple->matches(elem), false);
+}
+
+TEST(Serialization, OneTuplePatternElemString) {
+    String msg("==test");
+    auto bytes = serialize(msg);
+    auto c_it = bytes.cbegin();
+    auto recv_msg = deserialize(c_it, bytes.cend());
+    EXPECT_EQ(recv_msg->GetType(), msg.GetType());
+    auto recv_tuple = static_cast<String*>(recv_msg.get());
+    TupleElem elem(std::string("test"));
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+    elem = TupleElem("test2");
+    EXPECT_EQ(recv_tuple->matches(elem), false);
+}
+
+TEST(Serialization, OneTuplePatternElemIntAll) {
+    Int msg("*");
+    auto bytes = serialize(msg);
+    auto c_it = bytes.cbegin();
+    auto recv_msg = deserialize(c_it, bytes.cend());
+    EXPECT_EQ(recv_msg->GetType(), msg.GetType());
+    auto recv_tuple = static_cast<Int*>(recv_msg.get());
+    TupleElem elem(123);
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+    elem = TupleElem(124);
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+}
+
+TEST(Serialization, OneTuplePatternElemFloatAll) {
+    Float msg("*");
+    auto bytes = serialize(msg);
+    auto c_it = bytes.cbegin();
+    auto recv_msg = deserialize(c_it, bytes.cend());
+    EXPECT_EQ(recv_msg->GetType(), msg.GetType());
+    auto recv_tuple = static_cast<Float*>(recv_msg.get());
+    TupleElem elem(123.5);
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+    elem = TupleElem(12.2);
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+}
+
+TEST(Serialization, OneTuplePatternElemStringAll) {
+    String msg("*");
+    auto bytes = serialize(msg);
+    auto c_it = bytes.cbegin();
+    auto recv_msg = deserialize(c_it, bytes.cend());
+    EXPECT_EQ(recv_msg->GetType(), msg.GetType());
+    auto recv_tuple = static_cast<String*>(recv_msg.get());
+    TupleElem elem(std::string("test"));
+    EXPECT_EQ(recv_tuple->matches(elem), true);
+    elem = TupleElem("test2");
+    EXPECT_EQ(recv_tuple->matches(elem), true);
 }

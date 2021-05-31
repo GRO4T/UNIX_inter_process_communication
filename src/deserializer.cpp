@@ -127,6 +127,7 @@ MsgType findFirstMsgType(StringConstIt& begin, StringConstIt end) {
     std::map<MsgType, std::size_t> msg_positions = {{TYPE_CONNECTION_MSG, NotFound()},
                                                     {TYPE_OPERATION_MSG, NotFound()},
                                                     {TYPE_TUPLE_ELEM, NotFound()},
+						    {TYPE_TUPLE_PATTERN_ELEM, NotFound()},
                                                     {TYPE_SERVER_CONN_RESPONSE, NotFound()}
                                                     };
     for (auto& msg_pos : msg_positions) {  // for each type try to find it
@@ -153,6 +154,9 @@ std::unique_ptr<Message> deserialize(StringConstIt& begin, StringConstIt end) {
             return deserialize<TYPE_OPERATION_MSG>(begin, end);
         case (TYPE_TUPLE_ELEM):
             return deserialize<TYPE_TUPLE_ELEM>(begin, end);
+	case (TYPE_TUPLE_PATTERN_ELEM):
+            return deserialize<TYPE_TUPLE_PATTERN_ELEM
+>(begin, end);
         case (TYPE_SERVER_CONN_RESPONSE):
             return deserialize<TYPE_SERVER_CONN_RESPONSE>(begin, end);
         default:
