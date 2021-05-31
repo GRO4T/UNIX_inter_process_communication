@@ -6,11 +6,9 @@
 #include <stdexcept>
 
 #include "message.hpp"
-#include "serializer.hpp"
 
 namespace linda {
 
-//using TupleElem = std::variant<int, double, std::string>;
 const MsgType TYPE_TUPLE_PATTERN_ELEM = 0b00001000;
 
 enum class Operator{
@@ -24,13 +22,12 @@ enum class Operator{
 	NotLessThan
 };
 
-class Pattern{
+struct Pattern: public Message{
 
-public:
-	std::string serializePattern();
+	MsgType GetType() override;
 	bool matches(TupleElem& elem);
+	std::string operatorToString();
 
-protected:
 	TupleElem value;
 	Operator op;
 
@@ -38,27 +35,17 @@ private:
 	bool matches(std::string& elem);
 	bool matches(int& elem);
 	bool matches(double& elem);
-
-	std::string operatorToString();
 };
 
-//Pattern deserializePattern(std::string);
-
-class String: public Pattern{
-
-public:
+struct String: public Pattern{
 	String(std::string pattern);
 };
 
-class Int: public Pattern{
-
-public:
+struct Int: public Pattern{
 	Int(std::string pattern);
 };
 
-class Float: public Pattern{
-
-public:
+struct Float: public Pattern{
 	Float(std::string pattern);
 };
 

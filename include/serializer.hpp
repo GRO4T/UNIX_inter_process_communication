@@ -3,6 +3,7 @@
 #include <string>
 #include <stdexcept>
 #include "message.hpp"
+#include "tuple.hpp"
 
 namespace linda {
 
@@ -61,5 +62,7 @@ std::string serialize(TupleElemMessage& msg); /*{
     }
     return bytes;
 }*/
+
+std::string serialize(Pattern& msg);
 
 }  // namespace linda

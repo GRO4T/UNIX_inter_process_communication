@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "message.hpp"
+#include "tuple.hpp"
 
 namespace linda {
 

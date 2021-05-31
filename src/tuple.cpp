@@ -1,31 +1,4 @@
 #include "tuple.hpp"
-/*
-linda::Pattern linda::deserializePattern(std::string){
-	linda::String("*");
-}
-*/
-std::string linda::Pattern::serializePattern(){
-	std::string bytes;
-	linda::serialize(std::back_inserter(bytes), TYPE_TUPLE_PATTERN_ELEM);
-	std::string valueElem;
-	if(auto elemString = std::get_if<std::string>(&value)){
-		linda::serialize(std::back_inserter(bytes), ELEM_STRING);
-		valueElem = *elemString;
-	}else if(auto elemInt = std::get_if<int>(&value)){
-		linda::serialize(std::back_inserter(bytes), ELEM_INT);
-		valueElem = std::to_string(*elemInt);
-	}else {
-		auto elemDouble = std::get<double>(value);
-		linda::serialize(std::back_inserter(bytes), ELEM_FLOAT);
-		valueElem = std::to_string(elemDouble);
-	}
-	if(op == Operator::All){
-		linda::serialize(std::back_inserter(bytes), operatorToString());
-	}else{
-		linda::serialize(std::back_inserter(bytes), operatorToString()+valueElem);
-	}
-	return bytes;
-}
 
 std::string linda::Pattern::operatorToString(){
 	if(op == Operator::All) return "*";
@@ -36,6 +9,10 @@ std::string linda::Pattern::operatorToString(){
 	if(op == Operator::NotGreaterThan) return "<=";
 	if(op == Operator::NotLessThan) return ">=";
 	throw std::runtime_error("bad option");
+}
+
+linda::MsgType linda::Pattern::GetType(){
+	return TYPE_TUPLE_PATTERN_ELEM;
 }
 
 bool linda::Pattern::matches(TupleElem& elem){

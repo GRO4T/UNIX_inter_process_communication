@@ -55,3 +55,26 @@ std::string linda::serialize(TupleElemMessage& msg) {
     }
     return bytes;
 }
+
+std::string linda::serialize(Pattern& msg){
+	std::string bytes;
+	serialize(std::back_inserter(bytes), msg.GetType());
+	std::string valueElem;
+	if(auto elemString = std::get_if<std::string>(&msg.value)){
+		serialize(std::back_inserter(bytes), ELEM_STRING);
+		valueElem = *elemString;
+	}else if(auto elemInt = std::get_if<int>(&msg.value)){
+		serialize(std::back_inserter(bytes), ELEM_INT);
+		valueElem = std::to_string(*elemInt);
+	}else {
+		auto elemDouble = std::get<double>(msg.value);
+		serialize(std::back_inserter(bytes), ELEM_FLOAT);
+		valueElem = std::to_string(elemDouble);
+	}
+	if(msg.op == Operator::All){
+		serialize(std::back_inserter(bytes), msg.operatorToString());
+	}else{
+		serialize(std::back_inserter(bytes), msg.operatorToString()+valueElem);
+	}
+	return bytes;
+}

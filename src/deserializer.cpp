@@ -100,6 +100,27 @@ std::unique_ptr<Message> deserialize<TYPE_TUPLE_ELEM>(StringConstIt& begin,
     return msg;
 }
 
+template <>
+std::unique_ptr<Message> deserialize<TYPE_TUPLE_PATTERN_ELEM>(StringConstIt& begin,
+                                                           StringConstIt end) {
+    std::advance(begin, sizeof(MsgType));
+    ElemType elem_type;
+    deserialize(&elem_type, begin, end);
+    std::string str_val;
+    deserialize(std::back_inserter(str_val), begin, end);
+    switch (elem_type)
+    {
+        case ELEM_INT:
+            return std::make_unique<Int>(str_val);
+        case ELEM_FLOAT:
+            return std::make_unique<Float>(str_val);
+        case ELEM_STRING:
+            return std::make_unique<String>(str_val);
+        default:
+            throw std::runtime_error("Cannot deserialize. Unknown tuple elem type.");
+    }
+}
+
 // find first message and move iterator to the beginning of it
 MsgType findFirstMsgType(StringConstIt& begin, StringConstIt end) {
     auto NotFound = [begin, end]() { return (std::size_t)(end - begin); };
