@@ -6,10 +6,12 @@
 #include <stdexcept>
 
 #include "message.hpp"
+#include "serializer.hpp"
 
 namespace linda {
 
 //using TupleElem = std::variant<int, double, std::string>;
+const MsgType TYPE_TUPLE_PATTERN_ELEM = 0b00001000;
 
 enum class Operator{
 	//None,
@@ -25,6 +27,7 @@ enum class Operator{
 class Pattern{
 
 public:
+	std::string serializePattern();
 	bool matches(TupleElem& elem);
 
 protected:
@@ -35,7 +38,11 @@ private:
 	bool matches(std::string& elem);
 	bool matches(int& elem);
 	bool matches(double& elem);
+
+	std::string operatorToString();
 };
+
+//Pattern deserializePattern(std::string);
 
 class String: public Pattern{
 

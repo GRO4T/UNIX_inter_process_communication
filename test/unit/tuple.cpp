@@ -192,3 +192,7 @@ TEST(Tuple, FloatNotLessThan) {
     EXPECT_EQ(pattern.matches(elemTupleEqual), true);
     EXPECT_EQ(pattern.matches(elemTupleLessThan), false);
 }
+
+TEST(Tuple, Serialize){
+    String pattern("*");
+}
