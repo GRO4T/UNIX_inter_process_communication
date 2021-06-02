@@ -38,4 +38,24 @@ void linda::Client::connect() {
     closeFIFO(fifo_write);
     sem_post(bus_sem);
     sem_close(bus_sem);
+
+    read_desk = open(read_path, O_RDONLY);
+    write_desk = open(write_path, O_WRONLY);
+}
+
+void linda::Client::disconnect(){
+    close(read_desk);
+    close(write_desk);
+}
+
+std::vector<linda::TupleElem> linda::Client::input(std::vector<linda::Pattern> tuple, int timeout){
+    return std::vector<linda::TupleElem>();
+}
+
+void linda::Client::output(std::vector<linda::TupleElem> tuple){
+    
+}
+
+std::vector<linda::TupleElem> linda::Client::read(std::vector<linda::Pattern> typle, int timeout){
+    return std::vector<linda::TupleElem>();
 }
