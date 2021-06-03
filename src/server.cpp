@@ -3,8 +3,8 @@
 #include "common.hpp"
 #include "deserializer.hpp"
 #include "linda_common.hpp"
-#include "message.hpp"
 #include "serializer.hpp"
+#include "service_thread.hpp"
 
 linda::Server::Server() {
     LOG_S(INFO) << "Starting server...\n";
@@ -48,16 +48,6 @@ linda::FifoPaths linda::Server::sendPaths() {
     return {client_write, client_read};
 }
 
-void* linda::Server::service(void * arg) {
-    auto fifo_path = *static_cast<FifoPaths*>(arg);
-    LOG_S(INFO) << "THIS IS SERVICE THREAD\n";
-    DLOG_S(INFO) << "FIFO READ: " << fifo_path.read_path << std::endl;
-    DLOG_S(INFO) << "FIFO WRITE: " << fifo_path.write_path << std::endl;
-    sleep(1);
-    LOG_S(INFO) << "Work...\n";
-    pthread_exit(nullptr);
-}
-
 void linda::Server::mainLoop() {
     struct pollfd pfd[2];
     memset(&pfd[0], 0, sizeof(pfd));
@@ -88,9 +78,9 @@ void linda::Server::mainLoop() {
         } else if (ret > 0 && pfd[1].revents & POLLOUT && connected) {
             LOG_S(INFO) << "Server approved client's connection...\nReturning response...\n";
             linda::FifoPaths paths = sendPaths();
-            pthread_t serviceThread;
-            pthread_create(&serviceThread, NULL, linda::Server::service, (void*) &paths);
-            service_threads.push_back(serviceThread);
+            pthread_t thread;
+            pthread_create(&thread, NULL, linda::ServiceThread::mainLoop, (void*) &paths);
+            service_threads.push_back(thread);
             connected = false;
         }
     }

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <vector>
 
+#include "message.hpp"
 #include "linda_common.hpp"
 
 namespace linda {
@@ -22,8 +23,6 @@ public:
 
 private:
     FifoPaths sendPaths();
-    // MUSI BYĆ STATIC BO INACZEJ SEGFAULT
-    static void* service(void* arg);
     std::string genUuid();
 
     int32_t fifo_write;
