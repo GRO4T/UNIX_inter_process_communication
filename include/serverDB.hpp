@@ -11,13 +11,18 @@ public:
     bool addTupleToDB(std::vector<TupleElem> newTuple);
     std::vector<TupleElem> findTuple(std::vector<Pattern> pattern);
     std::vector<TupleElem> findTupleAndRemoveIt(std::vector<Pattern> pattern);
+    void waitForTuple(std::vector<linda::Pattern> pattern);
 
 private:
     bool isTupleAlreadyInDatabase(std::vector<TupleElem> left, std::vector<TupleElem> right);
+    bool isPatternEqualToTuple(std::vector<Pattern> pattern,std::vector<TupleElem> tuple);
+    void informWaitingThreads(std::vector<TupleElem> tuple);
 
     std::unordered_map<int, std::vector<std::vector<TupleElem>>> records;
-    pthread_mutex_t mutex;
+    std::vector<std::pair<std::vector<linda::Pattern>, std::mutex*>> awaitedTuples;
 
+    std::mutex db_mutex;
+    std::mutex queue_mutex;
 
 
     template<typename T>

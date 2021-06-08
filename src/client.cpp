@@ -7,45 +7,74 @@
 
 using namespace linda;
 
-void sendTuples(std::string readPath, std::string writePath){
+void Client::sendTuples(std::string readPath, std::string writePath){
     int32_t fifo_read = linda::openFIFO(readPath, O_RDWR);
     int32_t fifo_write = linda::openFIFO(writePath, O_RDWR);
 
-     sleep(2);
-    linda::OperationMessage msg(linda::OP_LINDA_WRITE, 2);
+    /*sleep(3);
+    linda::OperationMessage msg(linda::OP_LINDA_WRITE, 5);
     sendMessage(msg, fifo_write);
 
     linda::TupleElemMessage msg2(3);
     sendMessage(msg2, fifo_write);
 
-    sleep(1);
     linda::TupleElemMessage msg3("tak");
     linda::sendMessage(msg3, fifo_write);
 
-    sleep(2);
-    linda::OperationMessage msg4(linda::OP_LINDA_READ, 2);
+    linda::TupleElemMessage msg8(46.03);
+    linda::sendMessage(msg8, fifo_write);
+
+    linda::TupleElemMessage msg9("nie");
+    linda::sendMessage(msg9, fifo_write);
+
+    linda::TupleElemMessage msg10(2000);
+    linda::sendMessage(msg10, fifo_write);
+
+    sleep(3);*/
+    std::optional<std::unique_ptr<Message>> msg_optional;
+    std::unique_ptr<Message> recv_msg;/*
+    bufferedReadFromPipe(message_buffer, fifo_read);
+    while ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
+                    msg_optional.has_value()) {
+                recv_msg = std::move(msg_optional.value());
+                if(recv_msg->GetType() == linda::TYPE_OPERATION_MSG){
+                    auto msg = static_cast<OperationMessage*>(recv_msg.get());
+                    LOG_S(INFO) << "Dostalem Potwierdzenie";
+                }
+            }
+    */
+    sleep(3);
+    linda::OperationMessage msg4(linda::OP_LINDA_READ, 5);
     linda::sendMessage(msg4, fifo_write);
 
-    sleep(1);
     linda::Int msg5("==3");
     linda::sendMessage(msg5, fifo_write);
 
-    sleep(1);
-    linda::String msg6("==ta");
+    linda::String msg6("==tak");
     linda::sendMessage(msg6, fifo_write);
 
-    sleep(2);
+    linda::Float msg11("==46.03");
+    linda::sendMessage(msg11, fifo_write);
+
+    linda::String msg12("==nie");
+    linda::sendMessage(msg12, fifo_write);
+
+    linda::Int msg13("!=1999");
+    linda::sendMessage(msg13, fifo_write);
+
+    sleep(3);
+    bufferedReadFromPipe(message_buffer, fifo_read);
+    while ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
+                    msg_optional.has_value()) {
+                recv_msg = std::move(msg_optional.value());
+                if(recv_msg->GetType() == linda::TYPE_OPERATION_MSG){
+                    auto msg = static_cast<OperationMessage*>(recv_msg.get());
+                    LOG_S(INFO) << "Dostalem Potwierdzenie";
+                }
+            }
+
     linda::ConnectionMessage msg7(false);
     linda::sendMessage(msg7, fifo_write);
-
-    //linda::OperationMessage msg(linda::OP_LINDA_WRITE, 1);
-    //linda::sendBytes(linda::serialize(msg), fifo_write);
-
-    //sleep(4);
-    //char buffer[linda::consts::max_path];
-    //memset(&buffer, 0, sizeof(buffer)); 
-    //read(fifo_read, &buffer, sizeof(buffer));
-    //LOG_S(INFO)<<buffer<<std::endl;
 
 }
 
@@ -75,6 +104,8 @@ void linda::Client::connect() {
         DLOG_S(INFO) << "FIFO READ: " << read_path << std::endl;
         DLOG_S(INFO) << "FIFO WRITE: " << write_path << std::endl;
 
+        sem_post(bus_sem);
+        sem_close(bus_sem);
         sendTuples(read_path, write_path);
     }
     else {
@@ -83,6 +114,4 @@ void linda::Client::connect() {
     // tidy up
     closeFIFO(fifo_read);
     closeFIFO(fifo_write);
-    sem_post(bus_sem);
-    sem_close(bus_sem);
 }

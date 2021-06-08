@@ -17,13 +17,16 @@ namespace linda {
 
 class Client {
 public:
-    Client() {
+    Client() : message_buffer(100) {
         LOG_S(INFO) << "Starting client...\n";
     }
+    void sendTuples(std::string readPath, std::string writePath);
     void connect();
 
+    MessageBuffer message_buffer;
     std::string read_path;
     std::string write_path;
+
 };
 
 }  // namespace linda

@@ -52,9 +52,13 @@ void ServiceThread::handleRead(int tuple_length) {
     }
     auto tuple = database->findTuple(pattern_tuple);
     if (tuple.empty()) {
-        // wait
+        database->waitForTuple(pattern_tuple);
+        linda::OperationMessage msg(linda::OP_RETURN_RESULT, 0);
+        sendMessage(msg, fifo_write);
     }
     else {
+        linda::OperationMessage msg(linda::OP_RETURN_RESULT, tuple.size());
+        sendMessage(msg, fifo_write);
         DLOG_S(INFO) << "Service thread tuple found\n";
     }
 }
@@ -70,14 +74,17 @@ void ServiceThread::handleInput(int tuple_length) {
         DLOG_S(INFO) << "Service thread received tuple pattern elem\n";
         auto pattern_msg = static_cast<Pattern*>(msg.get());
         pattern_tuple.push_back(*pattern_msg);
-        //findTupleAndRemoveIt(pattern_tuple);
         i++;
     }
     auto tuple = database->findTupleAndRemoveIt(pattern_tuple);
     if( tuple.empty() ){
-        //czekaj
+        database->waitForTuple(pattern_tuple);
+        linda::OperationMessage msg(linda::OP_RETURN_RESULT, 0);
+        sendMessage(msg, fifo_write);
     }
     else{
+        linda::OperationMessage msg(linda::OP_RETURN_RESULT, tuple.size());
+        sendMessage(msg, fifo_write);
         DLOG_S(INFO) << "Service thread tuple found\n";
     }
 }
@@ -96,6 +103,9 @@ void ServiceThread::handleWrite(int tuple_length) {
         i++;
     }
     database->addTupleToDB(tuple);
+    linda::OperationMessage msg(linda::OP_RETURN_RESULT, 0);
+    sendMessage(msg, fifo_write);
+
 }
 
 void linda::ServiceThread::handleOperationMessage(OperationMessage* op_msg){
