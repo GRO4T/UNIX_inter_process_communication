@@ -24,7 +24,6 @@ private:
 
     MessageBuffer message_buffer;
 
-    int awaited_tuple_segments;
     OperationType curr_operation_type;
 };
 

@@ -18,7 +18,6 @@ linda::ServiceThread::ServiceThread(FifoPaths paths): message_buffer(100){
     pfd[1].fd = fifo_write;
     pfd[1].events = POLLOUT;
 
-    awaited_tuple_segments = 0;
     curr_operation_type = 0;
 }
 
@@ -85,7 +84,6 @@ void ServiceThread::handleWrite(int tuple_length) {
 
 void linda::ServiceThread::handleOperationMessage(OperationMessage* op_msg){
     curr_operation_type = op_msg->op_type;
-    awaited_tuple_segments = op_msg->tuple_size;
     switch (op_msg->op_type) {
         case OP_LINDA_READ:
             handleRead(op_msg->tuple_size);
