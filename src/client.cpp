@@ -4,6 +4,7 @@
 #include "deserializer.hpp"
 #include "serializer.hpp"
 #include "linda_common.hpp"
+#include "tuple.hpp"
 
 using namespace linda;
 
@@ -18,12 +19,25 @@ void sendTuples(std::string readPath, std::string writePath){
     linda::TupleElemMessage msg2(3);
     sendMessage(msg2, fifo_write);
 
-    linda::TupleElemMessage msg3("somestring");
-    sendMessage(msg3, fifo_write);
+    sleep(1);
+    linda::TupleElemMessage msg3("tak");
+    linda::sendBytes(linda::serialize(msg3), fifo_write);
 
-    // sleep(2);
-//    linda::ConnectionMessage msg4(false);
-//    linda::sendBytes(linda::serialize(msg4), fifo_write);
+    sleep(2);
+    linda::OperationMessage msg4(linda::OP_LINDA_READ, 2);
+    linda::sendBytes(linda::serialize(msg4), fifo_write);
+
+    sleep(1);
+    linda::Int msg5("==3");
+    linda::sendBytes(linda::serialize(msg5), fifo_write);
+
+    sleep(1);
+    linda::String msg6("==ta");
+    linda::sendBytes(linda::serialize(msg6), fifo_write);
+
+    sleep(2);
+    linda::ConnectionMessage msg7(false);
+    linda::sendBytes(linda::serialize(msg7), fifo_write);
 
     //linda::OperationMessage msg(linda::OP_LINDA_WRITE, 1);
     //linda::sendBytes(linda::serialize(msg), fifo_write);

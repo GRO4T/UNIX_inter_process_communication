@@ -80,9 +80,9 @@ void linda::Server::mainLoop() {
             }
         } else if (ret > 0 && pfd[1].revents & POLLOUT && connected) {
             LOG_S(INFO) << "Server approved client's connection...\nReturning response...\n";
-            linda::FifoPaths paths = sendPaths();
+            ServiceThreadParameters params(sendPaths(), &database);
             pthread_t thread;
-            pthread_create(&thread, NULL, linda::ServiceThread::mainLoop, (void*) &paths);
+            pthread_create(&thread, NULL, linda::ServiceThread::mainLoop, (void*) &params);
             service_threads.push_back(thread);
             connected = false;
         }
