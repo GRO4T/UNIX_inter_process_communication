@@ -1,12 +1,14 @@
 #include "service_thread.hpp"
 #include "common.hpp"
-#include "message.hpp"
 #include "deserializer.hpp"
 #include "serializer.hpp"
+#include "serverDB.hpp"
 
-linda::ServiceThread::ServiceThread(FifoPaths paths){
-    fifo_read = openFIFO(paths.read_path, O_RDWR);
-    fifo_write = openFIFO(paths.write_path, O_RDWR);
+
+
+linda::ServiceThread::ServiceThread(ServiceThreadParameters params){
+    fifo_read = openFIFO(params.paths.read_path, O_RDWR);
+    fifo_write = openFIFO(params.paths.write_path, O_RDWR);
 
     memset(&pfd[0], 0, sizeof(pfd));
     pfd[0].fd = fifo_read;
@@ -14,6 +16,8 @@ linda::ServiceThread::ServiceThread(FifoPaths paths){
     memset(&pfd[1], 0, sizeof(pfd));
     pfd[1].fd = fifo_write;
     pfd[1].events = POLLOUT;
+
+    database = params.databasePtr;
 
     awaited_tuple_segments = 0;
     curr_operation_type = 0;
@@ -41,14 +45,16 @@ void linda::ServiceThread::handleOperationMessage(Message* msg){
     std::vector<std::unique_ptr<Message>> msg_vec;
     std::vector<TupleElem> tuple;
     std::vector<Pattern> pattern_tuple;
-    for(int i = 0; i < awaited_tuple_segments; ++i){
+    for(int i = 1; i <= awaited_tuple_segments; ++i){
 
         if(curr_operation_type == OP_LINDA_WRITE){
             auto msg = getMessageOrWait();
             auto elem_msg = dynamic_cast<TupleElemMessage*>(msg.get());
 
             tuple.push_back(elem_msg->elem);
-            //addTupleToDB(tuple);
+            if( i == awaited_tuple_segments ){
+                database->addTupleToDB(tuple);
+            }
         }
 
         if(curr_operation_type == OP_LINDA_READ){
@@ -56,7 +62,15 @@ void linda::ServiceThread::handleOperationMessage(Message* msg){
             auto pattern_msg = dynamic_cast<Pattern*>(msg.get());
 
             pattern_tuple.push_back(*pattern_msg);
-            //findTuple(pattern_tuple);
+            if( i == awaited_tuple_segments ){
+                tuple = database->findTuple(pattern_tuple);
+                if( tuple.empty() ){
+                    //czekaj
+                }
+                else{
+                    //oddaj
+                }
+            }
         }
 
         if(curr_operation_type == OP_LINDA_INPUT){
@@ -64,7 +78,15 @@ void linda::ServiceThread::handleOperationMessage(Message* msg){
             auto pattern_msg = dynamic_cast<Pattern*>(msg.get());
 
             pattern_tuple.push_back(*pattern_msg);
-            //findTupleAndRemoveIt(pattern_tuple);
+            if( i == awaited_tuple_segments ){
+                database->findTupleAndRemoveIt(pattern_tuple);
+                if( tuple.empty() ){
+                    //czekaj
+                }
+                else{
+                    //oddaj
+                }
+            }
         }
     }
 }
@@ -81,8 +103,8 @@ std::unique_ptr<linda::Message> linda::ServiceThread::getMessageOrWait(){
 }
 
 void* linda::ServiceThread::mainLoop(void* arg){
-    auto fifo_paths = *static_cast<FifoPaths*>(arg);
-    ServiceThread service(fifo_paths);
+    auto params = *static_cast<ServiceThreadParameters*>(arg);
+    ServiceThread service(params);
 
     LOG_S(INFO) << "THIS IS SERVICE THREAD\n";
 

@@ -4,10 +4,12 @@
 #include "deserializer.hpp"
 #include "serializer.hpp"
 #include "linda_common.hpp"
+#include "tuple.hpp"
 
-void dick(std::string readPath, std::string writePath){
-    int32_t fifo_read = linda::openFIFO(readPath, O_RDWR);
+void tak(std::string readPath, std::string writePath){
+    //int32_t fifo_read = linda::openFIFO(readPath, O_RDWR);
     int32_t fifo_write = linda::openFIFO(writePath, O_RDWR);
+
 
     linda::OperationMessage msg(linda::OP_LINDA_WRITE, 2);
     linda::sendBytes(linda::serialize(msg), fifo_write);
@@ -17,12 +19,24 @@ void dick(std::string readPath, std::string writePath){
     linda::sendBytes(linda::serialize(msg2), fifo_write);
 
     sleep(1);
-    linda::TupleElemMessage msg3("dick");
+    linda::TupleElemMessage msg3("tak");
     linda::sendBytes(linda::serialize(msg3), fifo_write);
 
     sleep(2);
-    linda::ConnectionMessage msg4(false);
+    linda::OperationMessage msg4(linda::OP_LINDA_READ, 2);
     linda::sendBytes(linda::serialize(msg4), fifo_write);
+
+    sleep(1);
+    linda::Int msg5("==3");
+    linda::sendBytes(linda::serialize(msg5), fifo_write);
+
+    sleep(1);
+    linda::String msg6("==ta");
+    linda::sendBytes(linda::serialize(msg6), fifo_write);
+
+    sleep(2);
+    linda::ConnectionMessage msg7(false);
+    linda::sendBytes(linda::serialize(msg7), fifo_write);
 
     //linda::OperationMessage msg(linda::OP_LINDA_WRITE, 1);
     //linda::sendBytes(linda::serialize(msg), fifo_write);
@@ -61,7 +75,7 @@ void linda::Client::connect() {
         DLOG_S(INFO) << "FIFO READ: " << read_path << std::endl;
         DLOG_S(INFO) << "FIFO WRITE: " << write_path << std::endl;
 
-        dick(read_path, write_path);
+        tak(read_path, write_path);
     }
     else {
         throw std::runtime_error("Bad message type in this context. Expected ServerConnectionResponse!");

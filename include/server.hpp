@@ -12,6 +12,7 @@
 
 #include "message.hpp"
 #include "linda_common.hpp"
+#include "serverDB.hpp"
 
 namespace linda {
 
@@ -27,6 +28,8 @@ private:
 
     int32_t fifo_write;
     int32_t fifo_read;
+    ServerDB database;
+    pthread_mutex_t database_mutex;
     sem_t* bus_sem;
     std::vector<pthread_t> service_threads;
 };

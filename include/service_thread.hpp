@@ -1,13 +1,24 @@
 #pragma once
 #include <memory>
+#include <vector>
 #include "linda_common.hpp"
 #include "message.hpp"
 
 namespace linda{
+class ServerDB;
+
+class ServiceThreadParameters{
+    public:
+    ServiceThreadParameters(FifoPaths _paths, ServerDB* _datebase) : 
+        paths(_paths), databasePtr(_datebase) {}
+
+    FifoPaths paths;
+    ServerDB* databasePtr;
+};
 
 class ServiceThread{
 public:
-    ServiceThread(FifoPaths paths);
+    ServiceThread(ServiceThreadParameters params);
     static void* mainLoop(void* arg);
 
 private:
@@ -15,6 +26,7 @@ private:
     void handleOperationMessage(Message* msg);
     std::unique_ptr<Message> getMessageOrWait();
 
+    ServerDB* database;
     int32_t fifo_read;
     int32_t fifo_write;
     struct pollfd pfd[2];
