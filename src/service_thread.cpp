@@ -8,7 +8,7 @@
 using namespace linda;
 
 
-linda::ServiceThread::ServiceThread(ServiceThreadParameters params){
+linda::ServiceThread::ServiceThread(ServiceThreadParameters params): message_buffer(100) {
     fifo_read = openFIFO(params.paths.read_path, O_RDWR);
     fifo_write = openFIFO(params.paths.write_path, O_RDWR);
 
@@ -21,7 +21,6 @@ linda::ServiceThread::ServiceThread(ServiceThreadParameters params){
 
     database = params.databasePtr;
 
-    awaited_tuple_segments = 0;
     curr_operation_type = 0;
 }
 
