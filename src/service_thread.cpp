@@ -33,42 +33,69 @@ bool linda::ServiceThread::handleConnectionMessage(Message* msg){
         LOG_S(INFO) << "Client wants to disconnect\n";
         return false;
     }
-
 }
 
-void linda::ServiceThread::handleOperationMessage(Message* msg){
-    OperationMessage* opp_msg = dynamic_cast<OperationMessage*>(msg);
-    curr_operation_type = opp_msg->op_type;
-    awaited_tuple_segments = opp_msg->tuple_size;
-
-    std::vector<std::unique_ptr<Message>> msg_vec;
-    std::vector<TupleElem> tuple;
+void ServiceThread::handleRead(int tuple_length) {
+    DLOG_S(INFO) << "Service thread began handling read operation\n";
     std::vector<Pattern> pattern_tuple;
-    for(int i = 0; i < awaited_tuple_segments; ++i){
+    int i = 0;
+    while (i < tuple_length){
+        auto msg = getMessageOrWait();
+        if (msg->GetType() != TYPE_TUPLE_PATTERN_ELEM)
+            throw std::runtime_error("Expected tuple pattern elem. Got something else\n");
+        DLOG_S(INFO) << "Service thread received tuple pattern elem\n";
+        auto pattern_msg = static_cast<Pattern*>(msg.get());
+        pattern_tuple.push_back(*pattern_msg);
+//        findTuple(pattern_tuple);
+        i++;
+    }
+}
 
-        if(curr_operation_type == OP_LINDA_WRITE){
-            auto msg = getMessageOrWait();
-            auto elem_msg = dynamic_cast<TupleElemMessage*>(msg.get());
+void ServiceThread::handleInput(int tuple_length) {
+    DLOG_S(INFO) << "Service thread began handling input operation\n";
+    std::vector<Pattern> pattern_tuple;
+    int i = 0;
+    while (i < tuple_length){
+        auto msg = getMessageOrWait();
+        if (msg->GetType() != TYPE_TUPLE_PATTERN_ELEM)
+            throw std::runtime_error("Expected tuple pattern elem. Got something else\n");
+        DLOG_S(INFO) << "Service thread received tuple pattern elem\n";
+        auto pattern_msg = static_cast<Pattern*>(msg.get());
+        pattern_tuple.push_back(*pattern_msg);
+        //findTupleAndRemoveIt(pattern_tuple);
+        i++;
+    }
+}
 
-            tuple.push_back(elem_msg->elem);
-            //addTupleToDB(tuple);
-        }
+void ServiceThread::handleWrite(int tuple_length) {
+    DLOG_S(INFO) << "Service thread began handling write operation\n";
+    std::vector<TupleElem> tuple;
+    int i = 0;
+    while (i < tuple_length) {
+        auto msg = getMessageOrWait();
+        if (msg->GetType() != TYPE_TUPLE_ELEM)
+            throw std::runtime_error("Expected tuple elem. Got something else\n");
+        DLOG_S(INFO) << "Service thread received tuple elem\n";
+        auto elem_msg = static_cast<TupleElemMessage*>(msg.get());
+        tuple.push_back(elem_msg->elem);
+        //addTupleToDB(tuple);
+        i++;
+    }
+}
 
-        if(curr_operation_type == OP_LINDA_READ){
-            auto msg = getMessageOrWait();
-            auto pattern_msg = dynamic_cast<Pattern*>(msg.get());
-
-            pattern_tuple.push_back(*pattern_msg);
-            //findTuple(pattern_tuple);
-        }
-
-        if(curr_operation_type == OP_LINDA_INPUT){
-            auto msg = getMessageOrWait();
-            auto pattern_msg = dynamic_cast<Pattern*>(msg.get());
-
-            pattern_tuple.push_back(*pattern_msg);
-            //findTupleAndRemoveIt(pattern_tuple);
-        }
+void linda::ServiceThread::handleOperationMessage(OperationMessage* op_msg){
+    curr_operation_type = op_msg->op_type;
+    awaited_tuple_segments = op_msg->tuple_size;
+    switch (op_msg->op_type) {
+        case OP_LINDA_READ:
+            handleRead(op_msg->tuple_size);
+            break;
+        case OP_LINDA_WRITE:
+            handleWrite(op_msg->tuple_size);
+            break;
+        case OP_LINDA_INPUT:
+            handleInput(op_msg->tuple_size);
+            break;
     }
 }
 
@@ -111,8 +138,7 @@ void* linda::ServiceThread::mainLoop(void* arg){
                         client_connected = service.handleConnectionMessage(recv_msg.get());
                         break;
                     case linda::TYPE_OPERATION_MSG:
-                        LOG_S(INFO) << "Operation msg";
-                        service.handleOperationMessage(recv_msg.get());
+                        service.handleOperationMessage(static_cast<OperationMessage*>(recv_msg.get()));
                         break;
                     default:
                         LOG_S(INFO) << "Wut?\n";

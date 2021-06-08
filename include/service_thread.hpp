@@ -12,7 +12,10 @@ public:
 
 private:
     bool handleConnectionMessage(Message* msg);
-    void handleOperationMessage(Message* msg);
+    void handleOperationMessage(OperationMessage* msg);
+    void handleRead(int tuple_length);
+    void handleInput(int tuple_length);
+    void handleWrite(int tuple_length);
     std::unique_ptr<Message> getMessageOrWait();
 
     int32_t fifo_read;

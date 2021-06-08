@@ -16,6 +16,7 @@
 
 #include "message_buffer.hpp"
 #include "serializer.hpp"
+#include "common.hpp"
 
 #define PIPE_READ_SIZE 512
 
@@ -55,6 +56,7 @@ template<class T>
 void sendMessage(T& msg, const int fifo_fd) {
     auto bytes = serialize(msg);
     bytes += MESSAGE_TERM_CHAR;
+    DLOG_S(INFO) << fmt::format("Sending {} bytes", bytes.length());
     sendBytes(bytes, fifo_fd);
 }
 std::string readBytes(const int fifo_fd);

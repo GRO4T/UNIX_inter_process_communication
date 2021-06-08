@@ -11,21 +11,19 @@ void sendTuples(std::string readPath, std::string writePath){
     int32_t fifo_read = linda::openFIFO(readPath, O_RDWR);
     int32_t fifo_write = linda::openFIFO(writePath, O_RDWR);
 
+     sleep(2);
     linda::OperationMessage msg(linda::OP_LINDA_WRITE, 2);
     sendMessage(msg, fifo_write);
 
     linda::TupleElemMessage msg2(3);
     sendMessage(msg2, fifo_write);
 
-    // sleep(1);
-    while (true) {
-        linda::TupleElemMessage msg3("somestring");
-        sendMessage(msg3, fifo_write);
-    }
+    linda::TupleElemMessage msg3("somestring");
+    sendMessage(msg3, fifo_write);
 
     // sleep(2);
-    linda::ConnectionMessage msg4(false);
-    linda::sendBytes(linda::serialize(msg4), fifo_write);
+//    linda::ConnectionMessage msg4(false);
+//    linda::sendBytes(linda::serialize(msg4), fifo_write);
 
     //linda::OperationMessage msg(linda::OP_LINDA_WRITE, 1);
     //linda::sendBytes(linda::serialize(msg), fifo_write);
