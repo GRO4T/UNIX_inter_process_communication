@@ -12,15 +12,17 @@ void dick(std::string readPath, std::string writePath){
     linda::OperationMessage msg(linda::OP_LINDA_WRITE, 2);
     linda::sendBytes(linda::serialize(msg), fifo_write);
 
-    sleep(1);
+    // sleep(1);
     linda::TupleElemMessage msg2(3);
     linda::sendBytes(linda::serialize(msg2), fifo_write);
 
-    sleep(1);
-    linda::TupleElemMessage msg3("dick");
-    linda::sendBytes(linda::serialize(msg3), fifo_write);
+    // sleep(1);
+    while (true) {
+        linda::TupleElemMessage msg3("dick");
+        linda::sendBytes(linda::serialize(msg3), fifo_write);
+    }
 
-    sleep(2);
+    // sleep(2);
     linda::ConnectionMessage msg4(false);
     linda::sendBytes(linda::serialize(msg4), fifo_write);
 

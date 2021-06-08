@@ -1,9 +1,16 @@
 #include "client.hpp"
 #include "common.hpp"
 
+
 int main(int argc, char ** argv){
+    std::string logfile = "client.log";
+    if (argc > 1) {
+        logfile = argv[1];
+        std::cout << logfile;
+    }
+
     try {
-        linda::loggerInit(argc, argv);
+        linda::loggerInit(argc, argv, logfile);
         linda::Client client;
         client.connect();
     }
