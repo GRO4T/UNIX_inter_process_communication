@@ -16,9 +16,9 @@ public:
     std::optional<std::string> popMessage();
 
 private:
-    std::string msg_buffer_;
     std::queue<std::string> queue_;
     uint max_size_;
+    std::string msg_buffer_;
 
     std::mutex m_;
     std::condition_variable cond_reader_;

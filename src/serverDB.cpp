@@ -36,7 +36,7 @@ std::vector<linda::TupleElem> linda::ServerDB::findTuple(std::vector<Pattern> pa
     for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
         std::vector<TupleElem> tuple = *iter;
         bool isTupleCorrect = true;
-        for(int i = 0; i < pattern.size(); ++i){
+        for(std::size_t i = 0; i < pattern.size(); ++i){
             if( !pattern[i].matches(tuple[i]) )
                 isTupleCorrect = false;
         }
@@ -62,7 +62,7 @@ std::vector<linda::TupleElem> linda::ServerDB::findTupleAndRemoveIt(std::vector<
     for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
         std::vector<TupleElem> tuple = *iter;
         bool isTupleCorrect = true;
-        for(int i = 0; i < pattern.size(); ++i){
+        for(std::size_t i = 0; i < pattern.size(); ++i){
             if( !pattern[i].matches(tuple[i]) )
                 isTupleCorrect = false;
         }
@@ -81,7 +81,7 @@ std::vector<linda::TupleElem> linda::ServerDB::findTupleAndRemoveIt(std::vector<
 }
 
 bool linda::ServerDB::isTupleAlreadyInDatabase(std::vector<TupleElem> left, std::vector<TupleElem> right){
-    for(long unsigned int i = 0; i < left.size(); ++i ){
+    for(std::size_t i = 0; i < left.size(); ++i ){
         if(!compareTupleElems<int>(left[i], right[i]))
             return false;
         if(!compareTupleElems<double>(left[i], right[i]))

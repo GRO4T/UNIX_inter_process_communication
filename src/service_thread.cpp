@@ -48,8 +48,14 @@ void ServiceThread::handleRead(int tuple_length) {
         DLOG_S(INFO) << "Service thread received tuple pattern elem\n";
         auto pattern_msg = static_cast<Pattern*>(msg.get());
         pattern_tuple.push_back(*pattern_msg);
-//        findTuple(pattern_tuple);
         i++;
+    }
+    auto tuple = database->findTuple(pattern_tuple);
+    if (tuple.empty()) {
+        // wait
+    }
+    else {
+        DLOG_S(INFO) << "Service thread tuple found\n";
     }
 }
 
@@ -67,6 +73,13 @@ void ServiceThread::handleInput(int tuple_length) {
         //findTupleAndRemoveIt(pattern_tuple);
         i++;
     }
+    auto tuple = database->findTupleAndRemoveIt(pattern_tuple);
+    if( tuple.empty() ){
+        //czekaj
+    }
+    else{
+        DLOG_S(INFO) << "Service thread tuple found\n";
+    }
 }
 
 void ServiceThread::handleWrite(int tuple_length) {
@@ -80,9 +93,9 @@ void ServiceThread::handleWrite(int tuple_length) {
         DLOG_S(INFO) << "Service thread received tuple elem\n";
         auto elem_msg = static_cast<TupleElemMessage*>(msg.get());
         tuple.push_back(elem_msg->elem);
-        //addTupleToDB(tuple);
         i++;
     }
+    database->addTupleToDB(tuple);
 }
 
 void linda::ServiceThread::handleOperationMessage(OperationMessage* op_msg){

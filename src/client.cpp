@@ -2,7 +2,6 @@
 
 #include "common.hpp"
 #include "deserializer.hpp"
-#include "serializer.hpp"
 #include "linda_common.hpp"
 #include "tuple.hpp"
 
