@@ -3,8 +3,11 @@
 #include "message.hpp"
 #include "deserializer.hpp"
 #include "serializer.hpp"
+#include "linda_common.hpp"
 
-linda::ServiceThread::ServiceThread(FifoPaths paths){
+using namespace linda;
+
+linda::ServiceThread::ServiceThread(FifoPaths paths): message_buffer(100){
     fifo_read = openFIFO(paths.read_path, O_RDWR);
     fifo_write = openFIFO(paths.write_path, O_RDWR);
 
@@ -70,19 +73,26 @@ void linda::ServiceThread::handleOperationMessage(Message* msg){
 }
 
 std::unique_ptr<linda::Message> linda::ServiceThread::getMessageOrWait(){
-    std::unique_ptr<Message> recv_msg;
+    std::optional<std::unique_ptr<Message>> msg_optional;
+    if ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
+        msg_optional.has_value()) {
+        return std::move(msg_optional.value());
+    }
     int ret = poll(pfd, 1, -1); //patrze tylko na pierwszy deskryptor, nie wiem czy to nie jakas herezja
     if(ret > 0 && pfd[0].revents & POLLIN){
-        auto bytes = readBytes(fifo_read);
-        auto c_it = bytes.cbegin();
-        recv_msg = deserialize(c_it, bytes.cend());
+        bufferedReadFromPipe(message_buffer, fifo_read);
+        if ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
+            msg_optional.has_value()) {
+            return std::move(msg_optional.value());
+        }
     }
-    return recv_msg;
 }
 
 void* linda::ServiceThread::mainLoop(void* arg){
     auto fifo_paths = *static_cast<FifoPaths*>(arg);
     ServiceThread service(fifo_paths);
+    std::optional<std::unique_ptr<Message>> msg_optional;
+    std::unique_ptr<Message> recv_msg;
 
     LOG_S(INFO) << "THIS IS SERVICE THREAD\n";
 
@@ -92,20 +102,22 @@ void* linda::ServiceThread::mainLoop(void* arg){
         int ret = poll(service.pfd, 2, -1);
         if(ret > 0 && service.pfd[0].revents & POLLIN){
             LOG_S(INFO) << "Something przyszlo...\n";
-            auto bytes = readBytes(service.fifo_read);
-            auto c_it = bytes.cbegin();
-            auto recv_msg = deserialize(c_it, bytes.cend());
-
-            switch ( recv_msg->GetType() ){
-                case linda::TYPE_CONNECTION_MSG:
-                    client_connected = service.handleConnectionMessage(recv_msg.get());
-                    break;
-                case linda::TYPE_OPERATION_MSG:
-                    service.handleOperationMessage(recv_msg.get());
-                    break;
-                default:
-                    LOG_S(INFO) << "Wut?\n";
-                    break;
+            bufferedReadFromPipe(service.message_buffer, service.fifo_read);
+            while ((msg_optional = fetchMessageFromBuffer(service.message_buffer)) &&
+                    msg_optional.has_value()) {
+                recv_msg = std::move(msg_optional.value());
+                switch ( recv_msg->GetType() ){
+                    case linda::TYPE_CONNECTION_MSG:
+                        client_connected = service.handleConnectionMessage(recv_msg.get());
+                        break;
+                    case linda::TYPE_OPERATION_MSG:
+                        LOG_S(INFO) << "Operation msg";
+                        service.handleOperationMessage(recv_msg.get());
+                        break;
+                    default:
+                        LOG_S(INFO) << "Wut?\n";
+                        break;
+                }
             }
 
         } 

@@ -8,6 +8,8 @@ namespace linda {
 // TODO move it somewhere else
 using TupleElem = std::variant<int, double, std::string>;
 
+constexpr char MESSAGE_TERM_CHAR = '$';
+
 using MsgType = uint8_t;
 using ElemType = uint8_t;
 using OperationType = uint8_t;

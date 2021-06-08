@@ -11,10 +11,13 @@
 
 #include <cstdint>
 #include <cstring>
-#include <string>
 #include <stdexcept>
+#include <string>
 
-#define BUFFER_SIZE 512
+#include "message_buffer.hpp"
+#include "serializer.hpp"
+
+#define PIPE_READ_SIZE 512
 
 namespace linda {
 
@@ -43,6 +46,21 @@ uint32_t openFIFO(const std::string& path, int mode);
 void makeFIFO(const std::string& path, mode_t mode);
 void closeFIFO(int fileDescriptor);
 
-void sendBytes(const std::string& msg, const int fifo_fd);
+inline void sendBytes(const std::string& msg, const int fifo_fd) {
+    int ret = write(fifo_fd, msg.c_str(), msg.length());
+    if (ret < 0)
+        throw "Error: Could not sendBytes through FIFO.";
+}
+template<class T>
+void sendMessage(T& msg, const int fifo_fd) {
+    auto bytes = serialize(msg);
+    bytes += MESSAGE_TERM_CHAR;
+    sendBytes(bytes, fifo_fd);
+}
 std::string readBytes(const int fifo_fd);
+
+std::optional<std::unique_ptr<Message>> fetchMessageFromBuffer(MessageBuffer& msg_buffer);
+void bufferedReadFromPipe(MessageBuffer& msg_buffer, const int fifo_fd);
+
+
 }  // namespace linda

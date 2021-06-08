@@ -19,6 +19,8 @@ private:
     int32_t fifo_write;
     struct pollfd pfd[2];
 
+    MessageBuffer message_buffer;
+
     int awaited_tuple_segments;
     OperationType curr_operation_type;
 };

@@ -10,8 +10,9 @@
 #include <iostream>
 #include <vector>
 
-#include "message.hpp"
 #include "linda_common.hpp"
+#include "message.hpp"
+#include "message_buffer.hpp"
 
 namespace linda {
 
@@ -24,6 +25,8 @@ public:
 private:
     FifoPaths sendPaths();
     std::string genUuid();
+
+    MessageBuffer message_buffer;
 
     int32_t fifo_write;
     int32_t fifo_read;

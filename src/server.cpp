@@ -1,12 +1,13 @@
 #include "server.hpp"
 
+#include "message.hpp"
 #include "common.hpp"
 #include "deserializer.hpp"
 #include "linda_common.hpp"
 #include "serializer.hpp"
 #include "service_thread.hpp"
 
-linda::Server::Server() {
+linda::Server::Server(): message_buffer(100) {
     LOG_S(INFO) << "Starting server...\n";
     // CREATING MUTEX;
     bus_sem = sem_open(linda::consts::bus_mutex, O_CREAT, linda::consts::perms,
@@ -61,19 +62,21 @@ void linda::Server::mainLoop() {
     while (true) {
         int ret = poll(pfd, 2, -1);
         if (ret > 0 && pfd[0].revents & POLLIN) {
-            LOG_S(INFO) << "Server received message...\n";
-            auto bytes = readBytes(fifo_read);
-            auto c_it = bytes.cbegin();
-            auto recv_msg = deserialize(c_it, bytes.cend());
-            if (recv_msg->GetType() == TYPE_CONNECTION_MSG) {
-                LOG_S(INFO) << "Client trying to connect...\n";
-                auto recv_conn_resp_msg = static_cast<ConnectionMessage*>(recv_msg.get());
-                if (recv_conn_resp_msg->connect) {
-                    connected = true;
+            bufferedReadFromPipe(message_buffer, fifo_read);
+            std::optional<std::unique_ptr<Message>> msg_optional;
+            while ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
+                   msg_optional.has_value()) {
+                auto recv_msg = std::move(msg_optional.value());
+                if (recv_msg->GetType() == TYPE_CONNECTION_MSG) {
+                    LOG_S(INFO) << "Client trying to connect...\n";
+                    auto recv_conn_resp_msg = static_cast<ConnectionMessage*>(recv_msg.get());
+                    if (recv_conn_resp_msg->connect) {
+                        connected = true;
+                    }
                 }
-            }
-            else {
-                throw std::runtime_error("Bad message type in this context. Expected ConnectionMessage!");
+                else {
+                    throw std::runtime_error("Bad message type in this context. Expected ConnectionMessage!");
+                }
             }
         } else if (ret > 0 && pfd[1].revents & POLLOUT && connected) {
             LOG_S(INFO) << "Server approved client's connection...\nReturning response...\n";
