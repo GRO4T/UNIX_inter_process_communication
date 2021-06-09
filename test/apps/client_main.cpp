@@ -10,7 +10,7 @@ int main(int argc, char ** argv){
     }
 
     try {
-        linda::loggerInit(argc, argv, logfile);
+        linda::loggerInit(argc, argv, logfile, false);
         linda::Client client;
         client.connect();
     }

@@ -6,85 +6,99 @@ using namespace linda;
 
 TEST(Parser, OneIntTupleElem) {
 	std::string data = "(3)";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 1);
 }
 
 TEST(Parser, MoreIntTupleElem) {
 	std::string data = "(3, 5, 7)";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 3);
 }
 
 TEST(Parser, OneFloatTupleElem) {
 	std::string data = "(3.4)";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 1);
 }
 
 TEST(Parser, MoreFloatTupleElem) {
 	std::string data = "(3.4, 457.12, 54.5, 7.8, 9.7)";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 5);
 }
 
 TEST(Parser, OneStringTupleElem) {
 	std::string data = "(\"napis\")";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 1);
 }
 
 TEST(Parser, MoreStringTupleElem) {
 	std::string data = "(\"napis\", \"napis2\", \"sgf\")";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 3);
 }
 
 TEST(Parser, TupleElem) {
 	std::string data = "(4, \"napis2\", \"sgf\", 5.8, 2, \"aw\", 3)";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserTupleElem(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parseTupleElem(data);
 	EXPECT_EQ(vectorTupleElem.size(), 7);
 }
 
 TEST(Parser, OneIntPattern) {
 	std::string data = "(Int(\"*\") )";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 1);
 }
 
 TEST(Parser, MoreIntPattern) {
 	std::string data = "(Int(\"*\"), Int(\"==4\"))";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 2);
 }
 
 TEST(Parser, OneFloatPattern) {
 	std::string data = "(Float(\"*\") )";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 1);
 }
 
 TEST(Parser, MoreFloatPattern) {
 	std::string data = "(Float(\"*\"), Float(\"==4\"))";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 2);
 }
 
 TEST(Parser, OneStringPattern) {
 	std::string data = "(String(\"*\") )";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 1);
 }
 
 TEST(Parser, MoreStringPattern) {
 	std::string data = "(String(\"*\"), String(\"==4\"))";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 2);
 }
 
 TEST(Parser, MorePattern) {
 	std::string data = "(Int(\"<3\"), String(\"*\"), String(\"==4\"), Float(\"*\"), Int(\"!=5\"))";
-	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =  parserPattern(data);
+	std::vector<std::variant<TupleElem, Pattern> > vectorTupleElem =
+        parsePattern(data);
 	EXPECT_EQ(vectorTupleElem.size(), 5);
 }
 
@@ -143,21 +157,21 @@ TEST(Parser, ShowMore) {
 
 TEST(Parser, TupleREAD) {
 	std::string data = "read(Int(\"==8\") )";
-	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result = parser(data);
+	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result = parse(data);
 	EXPECT_EQ(result.first, OP_LINDA_READ);
 	EXPECT_EQ(result.second.size(), 1);
 }
 
 TEST(Parser, TupleOUTPUT) {
 	std::string data = "output(69,4)";
-	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result = parser(data);
+	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result = parse(data);
 	EXPECT_EQ(result.first, OP_LINDA_WRITE);
 	EXPECT_EQ(result.second.size(), 2);
 }
 
 TEST(Parser, TupleINPUT) {
 	std::string data = "input(Int(\"==8\"))";
-	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result = parser(data);
+	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result = parse(data);
 	EXPECT_EQ(result.first, OP_LINDA_INPUT);
 	EXPECT_EQ(result.second.size(), 1);
 }

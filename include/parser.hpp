@@ -4,13 +4,13 @@
 
 namespace linda {
 
-std::pair<OperationType, std::vector<std::variant<TupleElem, Pattern> > > parser(std::string data);
+std::pair<OperationType, std::vector<std::variant<TupleElem, Pattern> > > parse(std::string data);
 
 std::string show(std::vector<TupleElem> data);
 
-std::vector<std::variant<TupleElem, Pattern> > parserTupleElem(std::string data);
+std::vector<std::variant<TupleElem, Pattern> > parseTupleElem(std::string data);
 
-std::vector<std::variant<TupleElem, Pattern> > parserPattern(std::string data);
+std::vector<std::variant<TupleElem, Pattern> > parsePattern(std::string data);
 
 }
 

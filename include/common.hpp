@@ -10,11 +10,15 @@ namespace linda {
 
 inline void loggerInit(int argc, char** argv,
                        const std::string& logfile = "lindux.log",
+                       bool log_to_console = true,
                        loguru::Verbosity verbosity = loguru::Verbosity_MAX) {
     loguru::init(argc, argv);
     loguru::add_file(logfile.c_str(), loguru::Append, verbosity);
     // Only show most relevant things on stderr:
-    loguru::g_stderr_verbosity = 1;
+    if (log_to_console)
+        loguru::g_stderr_verbosity = loguru::Verbosity_1;
+    else
+        loguru::g_stderr_verbosity = loguru::Verbosity_OFF;
 }
 
 class UuidMaker {

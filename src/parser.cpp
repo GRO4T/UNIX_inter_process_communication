@@ -1,17 +1,19 @@
 #include "parser.hpp"
 
-std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > linda::parser(std::string data){
+std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > linda::parse(std::string data){
 	std::pair<linda::OperationType, std::vector<std::variant<linda::TupleElem, linda::Pattern> > > result;
 	if(data.substr(0, 4) == "read"){
 		result.first = OP_LINDA_READ;
-		result.second = linda::parserPattern(data.substr(4));
+		result.second = linda::parsePattern(data.substr(4));
 	}else if(data.substr(0, 6) == "output"){
 		result.first = OP_LINDA_WRITE;
-		result.second = linda::parserTupleElem(data.substr(6));
+		result.second = linda::parseTupleElem(data.substr(6));
 	}else if(data.substr(0, 5) == "input"){
 		result.first = OP_LINDA_INPUT;
-		result.second = linda::parserPattern(data.substr(5));
-	}
+		result.second = linda::parsePattern(data.substr(5));
+	} else {
+        throw std::runtime_error("unrecognized command");
+    }
 	return result;
 }
 
@@ -29,7 +31,7 @@ std::string linda::show(std::vector<linda::TupleElem> data){
 	return result;
 }
 
-std::vector<std::variant<linda::TupleElem, linda::Pattern> > linda::parserTupleElem(std::string data){
+std::vector<std::variant<linda::TupleElem, linda::Pattern> > linda::parseTupleElem(std::string data){
 	std::vector<std::variant<linda::TupleElem, linda::Pattern> > result;
 	auto found = data.find_first_not_of(' ');
 	if(found == std::string::npos || data[found] != '(')
@@ -76,7 +78,7 @@ result.push_back(std::stoi(data.substr(found, foundNotDigit-found)));
 	return result;
 }
 
-std::vector<std::variant<linda::TupleElem, linda::Pattern> > linda::parserPattern(std::string data){
+std::vector<std::variant<linda::TupleElem, linda::Pattern> > linda::parsePattern(std::string data){
 	std::vector<std::variant<linda::TupleElem, linda::Pattern> > result;
 	auto found = data.find_first_not_of(' ');
 	if(found == std::string::npos || data[found] != '(')

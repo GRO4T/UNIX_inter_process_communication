@@ -4,13 +4,29 @@
 #include "deserializer.hpp"
 #include "linda_common.hpp"
 #include "tuple.hpp"
+#include "parser.hpp"
 
 using namespace linda;
 
 void Client::communicate(){
 
     std::optional<std::unique_ptr<Message>> msg_optional;
-    std::unique_ptr<Message> recv_msg;/*
+    std::unique_ptr<Message> recv_msg;
+    std::string user_command = "";
+    while (user_command != "exit") {
+        std::cout << "> ";
+        std::cin >> user_command;
+        try {
+            auto linda_command = parse(user_command);
+            std::cout << show({1, 2, "1"}) << std::endl;
+        }
+        catch (std::exception& e) {
+            LOG_S(ERROR) << fmt::format("Error parsing user input: {}", e.what());
+            std::cout << e.what() << std::endl;
+        }
+    }
+
+    /*
     bufferedReadFromPipe(message_buffer, fifo_read);
     while ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
                     msg_optional.has_value()) {
