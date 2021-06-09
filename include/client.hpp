@@ -31,6 +31,7 @@ public:
     void disconnect();
     void handleCommand(Command cmd);
 
+private:
     MessageBuffer message_buffer;
     std::string read_path;
     std::string write_path;
