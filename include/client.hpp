@@ -12,6 +12,10 @@
 
 #include "linda_common.hpp"
 #include "common.hpp"
+#include "message.hpp"
+#include "tuple.hpp"
+#include "serializer.hpp"
+#include "deserializer.hpp"
 
 namespace linda {
 
