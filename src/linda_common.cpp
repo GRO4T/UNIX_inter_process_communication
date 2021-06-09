@@ -82,3 +82,37 @@ std::unique_ptr<linda::Message> linda::readFromPipeUntilMessageFound(
         bufferedReadFromPipe(message_buffer, fifo_read);
     }
 }
+
+std::vector<TupleElem> linda::receiveTuple(int tuple_length,
+                                    MessageBuffer& message_buffer,
+                                    const int fifo_read) {
+    std::vector<TupleElem> tuple;
+    int i = 0;
+    while (i < tuple_length) {
+        auto msg = readFromPipeUntilMessageFound(message_buffer, fifo_read);
+        if (msg->GetType() != TYPE_TUPLE_ELEM)
+            throw std::runtime_error("Expected tuple elem. Got something else\n");
+        DLOG_S(INFO) << "Received tuple elem\n";
+        auto elem_msg = static_cast<TupleElemMessage*>(msg.get());
+        tuple.push_back(elem_msg->elem);
+        i++;
+    }
+    return tuple;
+}
+
+std::vector<Pattern> linda::receivePattern(int tuple_length,
+                                    MessageBuffer& message_buffer,
+                                    const int fifo_read) {
+    std::vector<Pattern> pattern_tuple;
+    int i = 0;
+    while (i < tuple_length){
+        auto msg = readFromPipeUntilMessageFound(message_buffer, fifo_read);
+        if (msg->GetType() != TYPE_TUPLE_PATTERN_ELEM)
+            throw std::runtime_error("Expected tuple pattern elem. Got something else\n");
+        DLOG_S(INFO) << "Received tuple pattern elem\n";
+        auto pattern_msg = static_cast<Pattern*>(msg.get());
+        pattern_tuple.push_back(*pattern_msg);
+        i++;
+    }
+    return pattern_tuple;
+}

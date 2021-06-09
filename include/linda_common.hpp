@@ -69,5 +69,9 @@ void sendPattern(OperationType op_type, const std::vector<Pattern> pattern, cons
 
 std::unique_ptr<linda::Message> readFromPipeUntilMessageFound(MessageBuffer& message_buffer, const int fifo_read);
 
+std::vector<TupleElem> receiveTuple(int tuple_length, MessageBuffer& message_buffer, const int fifo_read);
+
+std::vector<Pattern> receivePattern(int tuple_length, MessageBuffer& message_buffer, const int fifo_read);
+
 
 }  // namespace linda

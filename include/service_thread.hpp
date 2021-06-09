@@ -31,7 +31,6 @@ private:
     ServerDB* database;
     int32_t fifo_read;
     int32_t fifo_write;
-    struct pollfd pfd[2];
 
     MessageBuffer message_buffer;
 };
