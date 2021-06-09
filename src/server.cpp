@@ -58,7 +58,7 @@ void linda::Server::mainLoop() {
     pfd[1].fd = fifo_write;
     pfd[1].events = POLLOUT;
 
-    bool connected = false;
+    bool new_connection = false;
     while (true) {
         int ret = poll(pfd, 2, -1);
         if (ret > 0 && pfd[0].revents & POLLIN) {
@@ -71,20 +71,20 @@ void linda::Server::mainLoop() {
                     LOG_S(INFO) << "Client trying to connect...\n";
                     auto recv_conn_resp_msg = static_cast<ConnectionMessage*>(recv_msg.get());
                     if (recv_conn_resp_msg->connect) {
-                        connected = true;
+                        new_connection = true;
                     }
                 }
                 else {
-                    throw std::runtime_error("Bad message type in this context. Expected ConnectionMessage!");
+                    LOG_S(ERROR) << "Bad message type in this context. Expected ConnectionMessage!";
                 }
             }
-        } else if (ret > 0 && pfd[1].revents & POLLOUT && connected) {
+        } else if (ret > 0 && pfd[1].revents & POLLOUT && new_connection) {
             LOG_S(INFO) << "Server approved client's connection...\nReturning response...\n";
             ServiceThreadParameters params(sendPaths(), &database);
             pthread_t thread;
             pthread_create(&thread, NULL, linda::ServiceThread::mainLoop, (void*) &params);
             service_threads.push_back(thread);
-            connected = false;
+            new_connection = false;
         }
     }
 }
