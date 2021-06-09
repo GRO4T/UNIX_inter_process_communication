@@ -17,7 +17,8 @@ void Client::interact(){
         if (!std::getline(std::cin, user_command)) continue;
         if (user_command == "exit") break;
         else if (user_command == "help") {
-            std::cout << "possible commands:\ninput\noutput\nread\nexit\n";
+            std::cout << "Commands:\ninput - read tuple and remove it from storage\n"
+                         "output - add tuple to storage\nread - read tuple from storage (without removal)\nexit - close client\n> ";
             continue;
         }
         try {
