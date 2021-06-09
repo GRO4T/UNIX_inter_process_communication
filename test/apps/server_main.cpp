@@ -5,7 +5,7 @@
 
 int main(int argc, char ** argv) {
     try {
-        linda::loggerInit(argc, argv);
+        linda::loggerInit(argc, argv, "server.log");
         linda::Server serv;
         serv.mainLoop();
     }
