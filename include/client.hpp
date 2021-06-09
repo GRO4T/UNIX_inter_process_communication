@@ -20,13 +20,15 @@ public:
     Client() : message_buffer(100) {
         LOG_S(INFO) << "Starting client...\n";
     }
-    void sendTuples(std::string readPath, std::string writePath);
+    void communicate();
     void connect();
+    void disconnect();
 
     MessageBuffer message_buffer;
     std::string read_path;
     std::string write_path;
-
+    int32_t fifo_read;
+    int32_t fifo_write;
 };
 
 }  // namespace linda

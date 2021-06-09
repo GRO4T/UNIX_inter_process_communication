@@ -47,8 +47,26 @@ std::optional<std::unique_ptr<Message>> linda::fetchMessageFromBuffer(
 }
 
 void linda::bufferedReadFromPipe(MessageBuffer& msg_buffer, const int fifo_fd) {
-    LOG_S(INFO) << "Received bytes...\n";
     auto bytes = readBytes(fifo_fd);
+    LOG_S(INFO) << fmt::format("Received {} bytes", bytes.length());
     msg_buffer.push(bytes);
 }
 
+void linda::sendTuple(OperationType op_type, const std::vector<TupleElem> tuple, const int fifo_fd) {
+    OperationMessage header(op_type, tuple.size());
+    sendMessage(header, fifo_fd);
+    for (auto elem : tuple) {
+        if (elem.index() == 0) {
+            int val = std::get<int>(elem);
+            TupleElemMessage msg(val);
+            sendMessage(msg, fifo_fd);
+        }
+    }
+}
+void linda::sendPattern(OperationType op_type, const std::vector<Pattern> pattern, const int fifo_fd) {
+    OperationMessage header(op_type, pattern.size());
+    sendMessage(header, fifo_fd);
+    for (auto elem : pattern) {
+        sendMessage(elem, fifo_fd);
+    }
+}

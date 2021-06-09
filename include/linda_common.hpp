@@ -64,5 +64,8 @@ std::string readBytes(const int fifo_fd);
 std::optional<std::unique_ptr<Message>> fetchMessageFromBuffer(MessageBuffer& msg_buffer);
 void bufferedReadFromPipe(MessageBuffer& msg_buffer, const int fifo_fd);
 
+void sendTuple(OperationType op_type, const std::vector<TupleElem> tuple, const int fifo_fd);
+void sendPattern(OperationType op_type, const std::vector<Pattern> pattern, const int fifo_fd);
+
 
 }  // namespace linda
