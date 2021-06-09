@@ -13,7 +13,7 @@
 #include "linda_common.hpp"
 #include "message.hpp"
 #include "message_buffer.hpp"
-#include "serverDB.hpp"
+#include "server_db.hpp"
 
 namespace linda {
 

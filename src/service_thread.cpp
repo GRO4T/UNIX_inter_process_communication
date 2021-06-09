@@ -1,9 +1,10 @@
 #include "service_thread.hpp"
+
 #include "common.hpp"
 #include "deserializer.hpp"
-#include "serializer.hpp"
 #include "linda_common.hpp"
-#include "serverDB.hpp"
+#include "serializer.hpp"
+#include "server_db.hpp"
 
 using namespace linda;
 
@@ -20,8 +21,6 @@ linda::ServiceThread::ServiceThread(ServiceThreadParameters params): message_buf
     pfd[1].events = POLLOUT;
 
     database = params.databasePtr;
-
-    curr_operation_type = 0;
 }
 
 bool linda::ServiceThread::handleConnectionMessage(Message* msg){
@@ -42,7 +41,7 @@ void ServiceThread::handleRead(int tuple_length) {
     std::vector<Pattern> pattern_tuple;
     int i = 0;
     while (i < tuple_length){
-        auto msg = getMessageOrWait();
+        auto msg = readFromPipeUntilMessageFound(message_buffer, fifo_read);
         if (msg->GetType() != TYPE_TUPLE_PATTERN_ELEM)
             throw std::runtime_error("Expected tuple pattern elem. Got something else\n");
         DLOG_S(INFO) << "Service thread received tuple pattern elem\n";
@@ -68,7 +67,7 @@ void ServiceThread::handleInput(int tuple_length) {
     std::vector<Pattern> pattern_tuple;
     int i = 0;
     while (i < tuple_length){
-        auto msg = getMessageOrWait();
+        auto msg = readFromPipeUntilMessageFound(message_buffer, fifo_read);
         if (msg->GetType() != TYPE_TUPLE_PATTERN_ELEM)
             throw std::runtime_error("Expected tuple pattern elem. Got something else\n");
         DLOG_S(INFO) << "Service thread received tuple pattern elem\n";
@@ -94,7 +93,7 @@ void ServiceThread::handleWrite(int tuple_length) {
     std::vector<TupleElem> tuple;
     int i = 0;
     while (i < tuple_length) {
-        auto msg = getMessageOrWait();
+        auto msg = readFromPipeUntilMessageFound(message_buffer, fifo_read);
         if (msg->GetType() != TYPE_TUPLE_ELEM)
             throw std::runtime_error("Expected tuple elem. Got something else\n");
         DLOG_S(INFO) << "Service thread received tuple elem\n";
@@ -109,7 +108,6 @@ void ServiceThread::handleWrite(int tuple_length) {
 }
 
 void linda::ServiceThread::handleOperationMessage(OperationMessage* op_msg){
-    curr_operation_type = op_msg->op_type;
     switch (op_msg->op_type) {
         case OP_LINDA_READ:
             handleRead(op_msg->tuple_size);
@@ -120,22 +118,6 @@ void linda::ServiceThread::handleOperationMessage(OperationMessage* op_msg){
         case OP_LINDA_INPUT:
             handleInput(op_msg->tuple_size);
             break;
-    }
-}
-
-std::unique_ptr<linda::Message> linda::ServiceThread::getMessageOrWait(){
-    std::optional<std::unique_ptr<Message>> msg_optional;
-    if ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
-        msg_optional.has_value()) {
-        return std::move(msg_optional.value());
-    }
-    int ret = poll(pfd, 1, -1); //patrze tylko na pierwszy deskryptor, nie wiem czy to nie jakas herezja
-    if(ret > 0 && pfd[0].revents & POLLIN){
-        bufferedReadFromPipe(message_buffer, fifo_read);
-        if ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
-            msg_optional.has_value()) {
-            return std::move(msg_optional.value());
-        }
     }
 }
 

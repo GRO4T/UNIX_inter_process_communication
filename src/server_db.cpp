@@ -53,8 +53,9 @@ std::vector<linda::TupleElem> linda::ServerDB::findTupleAndRemoveIt(std::vector<
     for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
         if( isPatternEqualToTuple(pattern, *iter) ){
             LOG_S(INFO) << "Znaleziono i usunieto odpowiadajaca krotke";
+            auto tuple = *iter;
             curr_row.erase(iter);
-            return *iter;
+            return tuple;
         }
 
     }

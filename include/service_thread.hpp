@@ -27,7 +27,6 @@ private:
     void handleRead(int tuple_length);
     void handleInput(int tuple_length);
     void handleWrite(int tuple_length);
-    std::unique_ptr<Message> getMessageOrWait();
 
     ServerDB* database;
     int32_t fifo_read;
@@ -35,8 +34,6 @@ private:
     struct pollfd pfd[2];
 
     MessageBuffer message_buffer;
-
-    OperationType curr_operation_type;
 };
 
 } //namespace linda

@@ -46,27 +46,39 @@ std::optional<std::unique_ptr<Message>> linda::fetchMessageFromBuffer(
     }
 }
 
-void linda::bufferedReadFromPipe(MessageBuffer& msg_buffer, const int fifo_fd) {
-    auto bytes = readBytes(fifo_fd);
+void linda::bufferedReadFromPipe(MessageBuffer& msg_buffer, const int fifo_read) {
+    auto bytes = readBytes(fifo_read);
     LOG_S(INFO) << fmt::format("Received {} bytes", bytes.length());
     msg_buffer.push(bytes);
 }
 
-void linda::sendTuple(OperationType op_type, const std::vector<TupleElem> tuple, const int fifo_fd) {
+void linda::sendTuple(OperationType op_type, const std::vector<TupleElem> tuple, const int fifo_write) {
     OperationMessage header(op_type, tuple.size());
-    sendMessage(header, fifo_fd);
+    sendMessage(header, fifo_write);
     for (auto elem : tuple) {
         if (elem.index() == 0) {
             int val = std::get<int>(elem);
             TupleElemMessage msg(val);
-            sendMessage(msg, fifo_fd);
+            sendMessage(msg, fifo_write);
         }
     }
 }
-void linda::sendPattern(OperationType op_type, const std::vector<Pattern> pattern, const int fifo_fd) {
+void linda::sendPattern(OperationType op_type, const std::vector<Pattern> pattern, const int fifo_write) {
     OperationMessage header(op_type, pattern.size());
-    sendMessage(header, fifo_fd);
+    sendMessage(header, fifo_write);
     for (auto elem : pattern) {
-        sendMessage(elem, fifo_fd);
+        sendMessage(elem, fifo_write);
+    }
+}
+
+std::unique_ptr<linda::Message> linda::readFromPipeUntilMessageFound(
+    MessageBuffer& message_buffer, const int fifo_read) {
+    std::optional<std::unique_ptr<Message>> msg_optional;
+    while (true) {
+        if ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
+            msg_optional.has_value()) {
+            return std::move(msg_optional.value());
+        }
+        bufferedReadFromPipe(message_buffer, fifo_read);
     }
 }

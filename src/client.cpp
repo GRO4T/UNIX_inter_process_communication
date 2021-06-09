@@ -26,7 +26,7 @@ void Client::communicate(){
               {1},
               fifo_write);
     sendPattern(
-        OP_LINDA_READ,
+        OP_LINDA_INPUT,
 //        {Int("==3"), String("==tak"), Float("==46.03"), String("==nie"), Int("!=1999")},
         {Int("*")},
         fifo_write);
