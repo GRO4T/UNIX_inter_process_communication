@@ -2,9 +2,9 @@
 
 #include <condition_variable>
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <string>
-#include <optional>
 
 namespace linda {
 
@@ -24,5 +24,4 @@ private:
     std::condition_variable cond_reader_;
 };
 
-
-}
+}  // namespace linda

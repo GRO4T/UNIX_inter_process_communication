@@ -1,5 +1,4 @@
-#ifndef TUPLE_HPP
-#define TUPLE_HPP
+#pragma once
 
 #include <variant>
 #include <string>
@@ -50,5 +49,3 @@ struct Float: public Pattern{
 };
 
 }  // namespace linda
-
-#endif // TUPLE_HPP
