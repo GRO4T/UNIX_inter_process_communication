@@ -19,14 +19,17 @@
 
 namespace linda {
 
+using Command = std::pair<OperationType, std::vector<std::variant<TupleElem, Pattern> > >;
+
 class Client {
 public:
     Client() : message_buffer(100) {
         LOG_S(INFO) << "Starting client...\n";
     }
-    void communicate();
+    void interact();
     void connect();
     void disconnect();
+    void handleCommand(Command cmd);
 
     MessageBuffer message_buffer;
     std::string read_path;

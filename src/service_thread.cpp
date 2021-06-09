@@ -38,8 +38,7 @@ void ServiceThread::handleRead(int tuple_length) {
         sendMessage(msg, fifo_write);
     }
     else {
-        linda::OperationMessage msg(linda::OP_RETURN_RESULT, tuple.size());
-        sendMessage(msg, fifo_write);
+        sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
         DLOG_S(INFO) << "Service thread tuple found\n";
     }
 }
@@ -54,8 +53,7 @@ void ServiceThread::handleInput(int tuple_length) {
         sendMessage(msg, fifo_write);
     }
     else{
-        linda::OperationMessage msg(linda::OP_RETURN_RESULT, tuple.size());
-        sendMessage(msg, fifo_write);
+        sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
         DLOG_S(INFO) << "Service thread tuple found\n";
     }
 }

@@ -8,57 +8,67 @@
 
 using namespace linda;
 
-void Client::communicate(){
-
+void Client::interact(){
     std::optional<std::unique_ptr<Message>> msg_optional;
     std::unique_ptr<Message> recv_msg;
-    std::string user_command = "";
-    while (user_command != "exit") {
-        std::cout << "> ";
-        std::cin >> user_command;
+    std::cout << "> ";
+    while (true) {
+        std::string user_command;
+        if (!std::getline(std::cin, user_command)) continue;
+        if (user_command == "exit") break;
+        else if (user_command == "help") {
+            std::cout << "possible commands:\ninput\noutput\nread\nexit\n";
+            continue;
+        }
         try {
             auto linda_command = parse(user_command);
-            std::cout << show({1, 2, "1"}) << std::endl;
+            handleCommand(linda_command);
+            auto recv_msg = readFromPipeUntilMessageFound(message_buffer, fifo_read);
+            if(recv_msg->GetType() == linda::TYPE_OPERATION_MSG){
+                auto server_response = static_cast<OperationMessage*>(recv_msg.get());
+                if (server_response->op_type == OP_RETURN_RESULT) {
+                    if (linda_command.first == OP_LINDA_WRITE && server_response->tuple_size == 0) {
+                        LOG_S(INFO) << "Write successful";
+                        std::cout << "Write successful\n";
+                    }
+                    else {
+                        auto tuple = receiveTuple(server_response->tuple_size, message_buffer, fifo_read);
+                        DLOG_S(INFO) << fmt::format("Received tuple {}", show(tuple));
+                        std::cout << show(tuple) << std::endl;
+                    }
+                }
+                else {
+                    LOG_S(INFO) << "Received response from server, but not of expected type";
+                    std::cout << "Server error\n";
+                }
+            }
         }
         catch (std::exception& e) {
             LOG_S(ERROR) << fmt::format("Error parsing user input: {}", e.what());
             std::cout << e.what() << std::endl;
         }
-    }
-
-    /*
-    bufferedReadFromPipe(message_buffer, fifo_read);
-    while ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
-                    msg_optional.has_value()) {
-                recv_msg = std::move(msg_optional.value());
-                if(recv_msg->GetType() == linda::TYPE_OPERATION_MSG){
-                    auto msg = static_cast<OperationMessage*>(recv_msg.get());
-                    LOG_S(INFO) << "Dostalem Potwierdzenie";
-                }
-            }
-    */
-    sleep(3);
-    sendTuple(OP_LINDA_WRITE,
-              {1},
-              fifo_write);
-    sendPattern(
-        OP_LINDA_INPUT,
-//        {Int("==3"), String("==tak"), Float("==46.03"), String("==nie"), Int("!=1999")},
-        {Int("*")},
-        fifo_write);
-
-    sleep(3);
-    bufferedReadFromPipe(message_buffer, fifo_read);
-    while ((msg_optional = fetchMessageFromBuffer(message_buffer)) &&
-                    msg_optional.has_value()) {
-                recv_msg = std::move(msg_optional.value());
-                if(recv_msg->GetType() == linda::TYPE_OPERATION_MSG){
-                    LOG_S(INFO) << "Dostalem Potwierdzenie";
-                }
+        std::cout << "> ";
     }
 
     disconnect();
+}
 
+void Client::handleCommand(Command cmd) {
+    auto op = cmd.first;
+    if (op == OP_LINDA_WRITE) {
+        std::vector<TupleElem> tuple;
+        for (auto elem : cmd.second) {
+            tuple.push_back(std::get<TupleElem>(elem));
+        }
+        sendTuple(op, tuple, fifo_write);
+    }
+    else {
+        std::vector<Pattern> pattern;
+        for (auto elem : cmd.second) {
+            pattern.push_back(std::get<Pattern>(elem));
+        }
+        sendPattern(op, pattern, fifo_write);
+    }
 }
 
 void linda::Client::disconnect() {
@@ -96,7 +106,7 @@ void linda::Client::connect() {
         sem_close(bus_sem);
         fifo_read = linda::openFIFO(read_path, O_RDWR);
         fifo_write = linda::openFIFO(write_path, O_RDWR);
-        communicate();
+        interact();
     }
     else {
         throw std::runtime_error("Bad message type in this context. Expected ServerConnectionResponse!");
