@@ -26,16 +26,9 @@ public:
     }
     
     void connect();
-    void disconnect();
-    std::vector<TupleElem> input(std::vector<Pattern> tuple, int timeout);
-    void output(std::vector<TupleElem> tuple);
-    std::vector<TupleElem> read(std::vector<Pattern> typle, int timeout);
 
     std::string read_path;
     std::string write_path;
-
-    int read_desk;
-    int write_desk;
 };
 
 }  // namespace linda
