@@ -6,3 +6,4 @@ bin/server > /dev/null 2>&1 &
 sleep 1
 bin/client test.log < test/integration/read_after_input/input.txt &
 sleep 2 && echo "TEST: terminating hanging client" && killall bin/client
+killall bin/server
