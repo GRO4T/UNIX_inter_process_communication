@@ -1,3 +1,4 @@
 output(1,2)
 input(Int("*"), Int("*"))
 read(Int("*"), Int("*"))
+exit
