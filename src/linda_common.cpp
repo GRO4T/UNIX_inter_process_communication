@@ -61,6 +61,16 @@ void linda::sendTuple(OperationType op_type, const std::vector<TupleElem> tuple,
             TupleElemMessage msg(val);
             sendMessage(msg, fifo_write);
         }
+        else if(elem.index() == 1){
+            double val = std::get<double>(elem);
+            TupleElemMessage msg(val);
+            sendMessage(msg, fifo_write);
+        }
+        else{
+            std::string val = std::get<std::string>(elem);
+            TupleElemMessage msg(val);
+            sendMessage(msg, fifo_write);
+        }
     }
 }
 void linda::sendPattern(OperationType op_type, const std::vector<Pattern> pattern, const int fifo_write) {
