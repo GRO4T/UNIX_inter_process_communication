@@ -6,7 +6,13 @@
 linda::ServerDB::ServerDB(){}
 
 bool linda::ServerDB::addTupleToDB(std::vector<TupleElem> newTuple){
-    LOG_S(INFO) << "Dodaje krotke";
+    LOG_S(INFO) << "Adding Tuple";
+
+    if( informWaitingThreads(newTuple) ){
+        LOG_S(INFO) << "Someone already has taken the tuple";
+        return true;
+    }
+
     {
         std::scoped_lock<std::mutex> lock(db_mutex);
 
@@ -14,78 +20,84 @@ bool linda::ServerDB::addTupleToDB(std::vector<TupleElem> newTuple){
         for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
             std::vector<TupleElem> tuple = *iter;
             if( isTupleAlreadyInDatabase(tuple, newTuple)){
-                LOG_S(INFO) << "Taka krotka juz jest na serwerze";
+                LOG_S(INFO) << "This tuple is already on the server";
                 return false;
             }
         }
         records[newTuple.size()].push_back(newTuple);
     }
-    LOG_S(INFO) << "Pomyslnie dodano krotke";
-
-    informWaitingThreads(newTuple);
+    LOG_S(INFO) << "Tuple has been added to the database";
 
     return true;
 }
 
 
 std::vector<linda::TupleElem> linda::ServerDB::findTuple(std::vector<Pattern> pattern){
-    LOG_S(INFO) << "Szukam krotki";
+    LOG_S(INFO) << "Looking for given pattern";
     std::scoped_lock<std::mutex> lock(db_mutex);
 
     std::vector<std::vector<TupleElem>> curr_row = records[pattern.size()];
     for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
         if( isPatternEqualToTuple(pattern, *iter) ){
-            LOG_S(INFO) << "Znaleziono odpowiadajaca krotke";
+            LOG_S(INFO) << "Found matching tuple";
             return *iter;
         }
 
     }
-    LOG_S(INFO) << "Nie znaleziono odpowiadajacej krotki";
-    return std::vector<linda::TupleElem>();
+    LOG_S(INFO) << "Correct tuple not found";
+    return std::vector<TupleElem>();
 }
 
 
 std::vector<linda::TupleElem> linda::ServerDB::findTupleAndRemoveIt(std::vector<Pattern> pattern){
-    LOG_S(INFO) << "Szukam krotki";
+    LOG_S(INFO) << "Looking for given pattern";
     std::scoped_lock<std::mutex> lock(db_mutex);
 
     std::vector<std::vector<TupleElem>> curr_row = records[pattern.size()];
     for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
         if( isPatternEqualToTuple(pattern, *iter) ){
-            LOG_S(INFO) << "Znaleziono i usunieto odpowiadajaca krotke";
+            LOG_S(INFO) << "Matching tuple found and removed";
             auto tuple = *iter;
             curr_row.erase(iter);
             return tuple;
         }
 
     }
-    LOG_S(INFO) << "Nie znaleziono odpowiadajacej krotki";
-    return std::vector<linda::TupleElem>();
+    LOG_S(INFO) << "Correct tuple not found";
+    return std::vector<TupleElem>();
 }
 
-void linda::ServerDB::informWaitingThreads(std::vector<TupleElem> tuple){
+bool linda::ServerDB::informWaitingThreads(std::vector<TupleElem> tuple){
     std::scoped_lock<std::mutex> lock(queue_mutex);
-    for(auto iter = awaitedTuples.begin(); iter != awaitedTuples.end() ; ++iter){
-        auto curr_pattern = iter->first;
-        if( isPatternEqualToTuple(curr_pattern, tuple) ){
-            iter->second->unlock();
-            awaitedTuples.erase(iter);
-            return;
+    for(auto iter = waiting_threads_queue.begin(); iter != waiting_threads_queue.end(); ++iter){
+
+        if( isPatternEqualToTuple( (*iter)->tuple_pattern, tuple) ){
+            (*iter)->passed_tuple = tuple;
+            (*iter)->mutex.unlock();
+            if( (*iter)->isInput ){
+                waiting_threads_queue.erase(iter);
+                return true;
+            }
+            waiting_threads_queue.erase(iter);
+            --iter;
         }
     }
+    return false;
 }
 
-void linda::ServerDB::waitForTuple(std::vector<linda::Pattern> pattern){
-    std::mutex newMutex;
+std::vector<linda::TupleElem> linda::ServerDB::waitForTuple(std::vector<Pattern> pattern, bool isInput){
+    AwaitingThread awaiting_thread(pattern, isInput);
     {
         std::scoped_lock<std::mutex> lock(queue_mutex);
-        awaitedTuples.push_back(std::make_pair(pattern, &newMutex));
+        waiting_threads_queue.push_back(&awaiting_thread);
     }
 
-    LOG_S(INFO) << "Czekam sobie na tuple :)";
-    newMutex.lock();
-    newMutex.lock();
-    LOG_S(INFO) << "Koniec czekania, let's do this";
+    LOG_S(INFO) << "I'm waiting for the tuple";
+    awaiting_thread.mutex.lock();
+    awaiting_thread.mutex.lock();
+    LOG_S(INFO) << "finally, let's get back to work";
+
+    return awaiting_thread.passed_tuple;
 }
 
 bool linda::ServerDB::isPatternEqualToTuple(std::vector<Pattern> pattern, std::vector<TupleElem> tuple){

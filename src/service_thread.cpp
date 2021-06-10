@@ -32,30 +32,28 @@ void ServiceThread::handleRead(int tuple_length) {
     DLOG_S(INFO) << "Service thread began handling read operation\n";
     auto pattern_tuple = receivePattern(tuple_length, message_buffer, fifo_read);
     auto tuple = database->findTuple(pattern_tuple);
-    if (tuple.empty()) {
-        database->waitForTuple(pattern_tuple);
-        linda::OperationMessage msg(linda::OP_RETURN_RESULT, 0);
-        sendMessage(msg, fifo_write);
+
+    if( tuple.empty() ) {
+        bool isInput = false;
+        tuple = database->waitForTuple(pattern_tuple, isInput);
     }
-    else {
-        sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
-        DLOG_S(INFO) << "Service thread tuple found\n";
-    }
+
+    sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
+    DLOG_S(INFO) << "Service thread tuple found\n";
 }
 
 void ServiceThread::handleInput(int tuple_length) {
     DLOG_S(INFO) << "Service thread began handling input operation\n";
     auto pattern_tuple = receivePattern(tuple_length, message_buffer, fifo_read);
     auto tuple = database->findTupleAndRemoveIt(pattern_tuple);
-    if( tuple.empty() ){
-        database->waitForTuple(pattern_tuple);
-        linda::OperationMessage msg(linda::OP_RETURN_RESULT, 0);
-        sendMessage(msg, fifo_write);
+
+    if( tuple.empty() ) {
+        bool isInput = true;
+        tuple = database->waitForTuple(pattern_tuple, isInput);
     }
-    else{
-        sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
-        DLOG_S(INFO) << "Service thread tuple found\n";
-    }
+
+    sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
+    DLOG_S(INFO) << "Service thread tuple found\n";
 }
 
 void ServiceThread::handleWrite(int tuple_length) {

@@ -7,8 +7,7 @@
 namespace linda{
 class ServerDB;
 
-class ServiceThreadParameters{
-    public:
+struct ServiceThreadParameters{
     ServiceThreadParameters(FifoPaths _paths, ServerDB* _datebase) : 
         paths(_paths), databasePtr(_datebase) {}
 
