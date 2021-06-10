@@ -53,7 +53,7 @@ std::vector<linda::TupleElem> linda::ServerDB::findTupleAndRemoveIt(std::vector<
     LOG_S(INFO) << "Looking for given pattern";
     std::scoped_lock<std::mutex> lock(db_mutex);
 
-    std::vector<std::vector<TupleElem>> curr_row = records[pattern.size()];
+    std::vector<std::vector<TupleElem>>& curr_row = records[pattern.size()];
     for(auto iter = curr_row.begin(); iter != curr_row.end(); ++iter){
         if( isPatternEqualToTuple(pattern, *iter) ){
             LOG_S(INFO) << "Matching tuple found and removed";
@@ -61,7 +61,6 @@ std::vector<linda::TupleElem> linda::ServerDB::findTupleAndRemoveIt(std::vector<
             curr_row.erase(iter);
             return tuple;
         }
-
     }
     LOG_S(INFO) << "Correct tuple not found";
     return std::vector<TupleElem>();
