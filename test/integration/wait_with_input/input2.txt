@@ -1,0 +1,2 @@
+input(Int(">0"), Float("<10.5"), String("==abc"))
+exit

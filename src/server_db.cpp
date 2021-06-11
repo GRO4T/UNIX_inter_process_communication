@@ -84,19 +84,17 @@ bool linda::ServerDB::informWaitingThreads(std::vector<TupleElem> tuple){
     return false;
 }
 
-std::vector<linda::TupleElem> linda::ServerDB::waitForTuple(std::vector<Pattern> pattern, bool isInput){
-    AwaitingThread awaiting_thread(pattern, isInput);
+std::vector<linda::TupleElem> linda::ServerDB::waitForTuple(AwaitingParams& awaiting_params){
     {
         std::scoped_lock<std::mutex> lock(queue_mutex);
-        waiting_threads_queue.push_back(&awaiting_thread);
+        waiting_threads_queue.push_back(&awaiting_params);
     }
 
     LOG_S(INFO) << "I'm waiting for the tuple";
-    awaiting_thread.mutex.lock();
-    awaiting_thread.mutex.lock();
+    awaiting_params.mutex.lock();
     LOG_S(INFO) << "finally, let's get back to work";
 
-    return awaiting_thread.passed_tuple;
+    return awaiting_params.passed_tuple;
 }
 
 bool linda::ServerDB::isPatternEqualToTuple(std::vector<Pattern> pattern, std::vector<TupleElem> tuple){

@@ -7,6 +7,17 @@
 namespace linda{
 class ServerDB;
 
+struct AwaitingParams{
+    AwaitingParams() {}
+    AwaitingParams(std::vector<Pattern> _tuple_pattern, bool _isInput) 
+    : tuple_pattern(_tuple_pattern), isInput(_isInput) {} 
+
+    std::vector<Pattern> tuple_pattern;
+    std::mutex mutex;
+    bool isInput;
+    std::vector<TupleElem> passed_tuple;
+};
+
 struct ServiceThreadParameters{
     ServiceThreadParameters(FifoPaths _paths, ServerDB* _datebase) : 
         paths(_paths), databasePtr(_datebase) {}
@@ -31,6 +42,7 @@ private:
     int32_t fifo_read;
     int32_t fifo_write;
 
+    AwaitingParams awaiting_parameters;
     MessageBuffer message_buffer;
 };
 

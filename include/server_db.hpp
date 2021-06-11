@@ -2,19 +2,9 @@
 #include <vector>
 #include "message.hpp"
 #include "tuple.hpp"
+#include "service_thread.hpp"
 
 namespace linda{
-
-struct AwaitingThread{
-    AwaitingThread(std::vector<Pattern> _tuple_pattern, bool _isInput) 
-    : tuple_pattern(_tuple_pattern), isInput(_isInput) {} 
-
-    std::vector<Pattern> tuple_pattern;
-    std::mutex mutex;
-    bool isInput;
-    std::vector<TupleElem> passed_tuple;
-};
-
 
 class ServerDB{
 public:
@@ -22,7 +12,7 @@ public:
     bool addTupleToDB(std::vector<TupleElem> newTuple);
     std::vector<TupleElem> findTuple(std::vector<Pattern> pattern);
     std::vector<TupleElem> findTupleAndRemoveIt(std::vector<Pattern> pattern);
-    std::vector<TupleElem> waitForTuple(std::vector<linda::Pattern> pattern, bool isInput);
+    std::vector<TupleElem> waitForTuple(AwaitingParams& awaiting_params);
 
 private:
     bool isTupleAlreadyInDatabase(std::vector<TupleElem> left, std::vector<TupleElem> right);
@@ -30,7 +20,7 @@ private:
     bool informWaitingThreads(std::vector<TupleElem> tuple);
 
     std::unordered_map<int, std::vector<std::vector<TupleElem>>> records;
-    std::vector<AwaitingThread*> waiting_threads_queue;
+    std::vector<AwaitingParams*> waiting_threads_queue;
 
     std::mutex db_mutex;
     std::mutex queue_mutex;

@@ -1,0 +1,4 @@
+output( 9.1, "hmm", 1)
+input(Float("<10"), String("==hmm"), Int("!=0"))
+input(Float("*"), String("*"), Int("*"))
+exit

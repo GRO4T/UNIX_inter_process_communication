@@ -13,6 +13,7 @@ linda::ServiceThread::ServiceThread(ServiceThreadParameters params): message_buf
     fifo_read = openFIFO(params.paths.read_path, O_RDWR);
     fifo_write = openFIFO(params.paths.write_path, O_RDWR);
     database = params.databasePtr;
+    awaiting_parameters.mutex.lock();
 }
 
 bool linda::ServiceThread::handleConnectionMessage(Message* msg){
@@ -34,8 +35,9 @@ void ServiceThread::handleRead(int tuple_length) {
     auto tuple = database->findTuple(pattern_tuple);
 
     if( tuple.empty() ) {
-        bool isInput = false;
-        tuple = database->waitForTuple(pattern_tuple, isInput);
+        awaiting_parameters.tuple_pattern = pattern_tuple;
+        awaiting_parameters.isInput = false;
+        tuple = database->waitForTuple(awaiting_parameters);
     }
 
     sendTuple(OP_RETURN_RESULT, tuple, fifo_write);
@@ -48,8 +50,9 @@ void ServiceThread::handleInput(int tuple_length) {
     auto tuple = database->findTupleAndRemoveIt(pattern_tuple);
 
     if( tuple.empty() ) {
-        bool isInput = true;
-        tuple = database->waitForTuple(pattern_tuple, isInput);
+        awaiting_parameters.tuple_pattern = pattern_tuple;
+        awaiting_parameters.isInput = true;
+        tuple = database->waitForTuple(awaiting_parameters);
     }
 
     sendTuple(OP_RETURN_RESULT, tuple, fifo_write);

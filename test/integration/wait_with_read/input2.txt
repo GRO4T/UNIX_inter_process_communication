@@ -1,0 +1,2 @@
+read(Int("!=0"), Float(">0.5"), String("!=cba"))
+exit
