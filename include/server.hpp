@@ -1,6 +1,8 @@
 #pragma once
 #include <fcntl.h>
 #include <semaphore.h>
+#include <signal.h>
+#include <stdlib.h>
 #include <sys/poll.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -22,7 +24,7 @@ public:
     Server();
     ~Server();
     void mainLoop();
-
+    static void sigHandler (int sig);
 private:
     FifoPaths sendPaths();
     std::string genUuid();
@@ -35,4 +37,5 @@ private:
     sem_t* bus_sem;
     std::vector<pthread_t> service_threads;
 };
+
 }  // namespace linda

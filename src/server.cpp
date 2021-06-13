@@ -1,17 +1,34 @@
 #include "server.hpp"
 
-#include "message.hpp"
 #include "common.hpp"
 #include "deserializer.hpp"
 #include "linda_common.hpp"
+#include "message.hpp"
 #include "serializer.hpp"
 #include "service_thread.hpp"
 
-linda::Server::Server(): message_buffer(100) {
+void linda::Server::sigHandler(int sig) {
+    LOG_S(INFO) << "Received SIGINT signal. Start cleaning up procedures\n";
+    sem_unlink(linda::consts::bus_mutex);
+    unlink(linda::consts::linda_bus_write);
+    unlink(linda::consts::linda_bus_read);
+    exit(1);
+}
+
+linda::Server::Server() : message_buffer(100) {
     LOG_S(INFO) << "Starting server...\n";
+
+    LOG_S(INFO) << "Setting signal handler\n";
+    struct sigaction sigIntHandler;
+    sigIntHandler.sa_handler = linda::Server::sigHandler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
+
     // CREATING MUTEX;
     bus_sem = sem_open(linda::consts::bus_mutex, O_CREAT, linda::consts::perms,
-                      linda::consts::mutex_value);
+                       linda::consts::mutex_value);
     // CREATING FIFOS;
     makeFIFO(linda::consts::linda_bus_read, linda::consts::perms);
     makeFIFO(linda::consts::linda_bus_write, linda::consts::perms);
@@ -22,11 +39,8 @@ linda::Server::Server(): message_buffer(100) {
 
 linda::Server::~Server() {
     sem_close(bus_sem);
-    sem_unlink(linda::consts::bus_mutex);
     closeFIFO(fifo_read);
     closeFIFO(fifo_write);
-    unlink(linda::consts::linda_bus_write);
-    unlink(linda::consts::linda_bus_read);
 }
 
 std::string linda::Server::genUuid() {
@@ -69,20 +83,23 @@ void linda::Server::mainLoop() {
                 auto recv_msg = std::move(msg_optional.value());
                 if (recv_msg->GetType() == TYPE_CONNECTION_MSG) {
                     LOG_S(INFO) << "Client trying to connect...\n";
-                    auto recv_conn_resp_msg = static_cast<ConnectionMessage*>(recv_msg.get());
+                    auto recv_conn_resp_msg =
+                        static_cast<ConnectionMessage*>(recv_msg.get());
                     if (recv_conn_resp_msg->connect) {
                         new_connection = true;
                     }
-                }
-                else {
-                    LOG_S(ERROR) << "Bad message type in this context. Expected ConnectionMessage!";
+                } else {
+                    LOG_S(ERROR) << "Bad message type in this context. "
+                                    "Expected ConnectionMessage!";
                 }
             }
         } else if (ret > 0 && pfd[1].revents & POLLOUT && new_connection) {
-            LOG_S(INFO) << "Server approved client's connection...\nReturning response...\n";
+            LOG_S(INFO) << "Server approved client's connection...\nReturning "
+                           "response...\n";
             ServiceThreadParameters params(sendPaths(), &database);
             pthread_t thread;
-            pthread_create(&thread, NULL, linda::ServiceThread::mainLoop, (void*) &params);
+            pthread_create(&thread, NULL, linda::ServiceThread::mainLoop,
+                           (void*)&params);
             service_threads.push_back(thread);
             new_connection = false;
         }
